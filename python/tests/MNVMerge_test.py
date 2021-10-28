@@ -120,21 +120,53 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
     assert get_last_vcf_process_index(in_head, key_prefix) == exp_idx
 
 
-def generate_new_increment_header(existing_line, n):
-    assert 1 == 0
-
-    # def generate_new_increment_header(self, existing_line, n):
-    #     """
-    #     Taking a header line, and an int n, generates a copy of that header
-    #     line with the key and description updates to include said
-    #     incremental int
-    #     """
-    #     new_line = existing_line.copy()
-    #     new_line.mapping["ID"] = new_line.mapping["ID"] + f"_{n}"
-    #     new_line.mapping["Description"] = (
-    #         new_line.mapping["Description"] + f" (MNV allele {n} in series)"
-    #     )
-    #     return new_line
+@pytest.mark.parametrize(
+    "existing_line, n, exp_line",
+    [
+        (
+            vcfpy.FormatHeaderLine.from_mapping(
+                {
+                    "ID": "TEST",
+                    "Number": 1,
+                    "Type": "Integer",
+                    "Description": "Test_Description",
+                }
+            ),
+            1,
+            vcfpy.FormatHeaderLine.from_mapping(
+                {
+                    "ID": "TEST_1",
+                    "Number": 1,
+                    "Type": "Integer",
+                    "Description": "Test_Description (MNV allele 1 in series)",
+                }
+            ),
+        ),
+        (
+            vcfpy.InfoHeaderLine.from_mapping(
+                {
+                    "ID": "TEST",
+                    "Number": 1,
+                    "Type": "String",
+                    "Description": "Test_Description",
+                }
+            ),
+            2,
+            vcfpy.InfoHeaderLine.from_mapping(
+                {
+                    "ID": "TEST_2",
+                    "Number": 1,
+                    "Type": "String",
+                    "Description": "Test_Description (MNV allele 2 in series)",
+                }
+            ),
+        ),
+    ],
+)
+def test_generate_new_increment_header(existing_line, n, exp_line):
+    merge_obj = MNVMerge(input_vcf, output_vcf, run_script, arg_str)
+    new_header_line = merge_obj.generate_new_increment_header(existing_line, n)
+    assert new_header_line == exp_line
 
 
 def test_perform_mnv_merge():
