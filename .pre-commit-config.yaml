@@ -16,6 +16,7 @@ repos:
     -   id: end-of-file-fixer
     -   id: name-tests-test
     -   id: requirements-txt-fixer
+        args: [python/requirements.txt]
     -   id: trailing-whitespace
 -   repo: https://github.com/executablebooks/mdformat
     rev: 0.7.9
