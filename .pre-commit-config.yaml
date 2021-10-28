@@ -18,11 +18,11 @@ repos:
     -   id: requirements-txt-fixer
     -   id: trailing-whitespace
 -   repo: https://github.com/executablebooks/mdformat
-    rev: 0.7.6
+    rev: 0.7.9
     hooks:
     -   id: mdformat
 -   repo: https://github.com/psf/black
-    rev: 21.5b1
+    rev: 21.9b0
     hooks:
       - id: black
         language_version: python3
@@ -35,16 +35,15 @@ repos:
     - id: xenon
       args: ["--max-absolute=D"]
 -   repo: https://github.com/hadolint/hadolint
-    rev: v2.4.1
+    rev: v2.7.0
     hooks:
     - id: hadolint-docker
 -   repo: https://github.com/jendrikseipp/vulture
     rev: 'v2.3'
-    args: [python/, python/casmsmartphase/, python/tests, python/scripts/]
     hooks:
     - id: vulture
       args: [python/scripts/merge_vcf_MNVs.py, python/casmsmartphase, python, python/tests]
 -   repo: https://github.com/asottile/reorder_python_imports
-    rev: v2.5.0
+    rev: v2.6.0
     hooks:
     -   id: reorder-python-imports

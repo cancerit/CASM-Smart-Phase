@@ -34,7 +34,7 @@
 
 set -e
 
-SRC_DIR=`dirname $0`/vcfflagmodifier
+SRC_DIR=`dirname $0`/casmsmartphase
 TEST_DIR=`dirname $0`/tests
 
  #!/usr/bin/env bash

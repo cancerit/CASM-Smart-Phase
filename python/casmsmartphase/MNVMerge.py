@@ -236,14 +236,6 @@ class MNVMerge:
         if do_qual:
             qual = qual / len(snv_list)
 
-        # INFO    FORMAT  NORMAL  TUMOUR
-        # DP=266;MP=1.0e+00;GP=4.6e-51;TG=GG/AGGGG;TP=1.0e+00;SG=GG/AAGGG;SP=9.4e-07      GT:FAZ:FCZ:FGZ:FTZ:RAZ:RCZ:RGZ:RTZ:PM   0|0:0:0:88:0:0:0:88:0:0.0e+00   0|1:6:0:40:0:4:0:40:0:1.1e-01
-        # {'DP': 271, 'MP': 1.0, 'GP': 7.1e-49, 'TG': 'GG/AGGGG', 'TP': 1.0, 'SG': 'GG/AAGGG', 'SP': 1.6e-06}
-        # {'DP': 266, 'MP': 1.0, 'GP': 4.6e-51, 'TG': 'GG/AGGGG', 'TP': 1.0, 'SG': 'GG/AAGGG', 'SP': 9.4e-07}
-        # ['GT', 'FAZ', 'FCZ', 'FGZ', 'FTZ', 'RAZ', 'RCZ', 'RGZ', 'RTZ', 'PM']
-        # ['GT', 'FAZ', 'FCZ', 'FGZ', 'FTZ', 'RAZ', 'RCZ', 'RGZ', 'RTZ', 'PM']
-        # [Call('NORMAL', {'GT': '0|0', 'FAZ': 0, 'FCZ': 0, 'FGZ': 88, 'FTZ': 0, 'RAZ': 0, 'RCZ': 0, 'RGZ': 88, 'RTZ': 0, 'PM': 0.0}), Call('TUMOUR', {'GT': '0|1', 'FAZ': 6, 'FCZ': 0, 'FGZ': 40, 'FTZ': 0, 'RAZ': 4, 'RCZ': 0, 'RGZ': 40, 'RTZ': 0, 'PM': 0.11})]
-        # [Call('NORMAL', {'GT': '0|0', 'FAZ': 0, 'FCZ': 1, 'FGZ': 88, 'FTZ': 0, 'RAZ': 1, 'RCZ': 0, 'RGZ': 88, 'RTZ': 0, 'PM': 0.0056}), Call('TUMOUR', {'GT': '0|1', 'FAZ': 6, 'FCZ': 0, 'FGZ': 41, 'FTZ': 0, 'RAZ': 5, 'RCZ': 1, 'RGZ': 40, 'RTZ': 0, 'PM': 0.12})]
         mnv = vcfpy.Record(
             chrom, pos, id, ref, alt, qual, filter, info, format, calls_dict.values()
         )
