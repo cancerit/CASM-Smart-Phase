@@ -1,8 +1,29 @@
 # CASM-Smart-Phase/python
 
+- [Installation](#installation)
+  - [Without Docker image](#without-docker-image)
 - [Python Utility Scripts](#python-utility-scripts)
   - [scripts/generate_MNV.bed.py](#scriptsgenerate_mnvbedpy)
   - [scripts/merge_vcf_MNVs.py](#scriptsmerge_vcf_mnvspy)
+
+## Installation
+
+### Without Docker image
+
+- Requires >= python 3.6
+
+```bash
+# Setup a python virtual environment.
+python -m venv /path/to/venv
+# Activate python environment
+source /path/to/venv/bin/activate
+# CD into the python directory
+cd CASM-Smart-Phase/python
+# Install CASM-Smart-Phase python
+pip install ./
+```
+
+**Alternatively use the Docker container**
 
 ## Python Utility Scripts
 

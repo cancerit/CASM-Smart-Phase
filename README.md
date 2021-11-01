@@ -4,7 +4,7 @@
 - [Docker image](#docker-image)
 - [LICENCE](#licence)
 
-Project aiming to provide a Docker image of [Smart-Phase](smart-phase)
+Project aiming to provide a Docker image of [Smart-Phase](https://github.com/paulhager/smart-phase)
 Please note, we do not support the Smart-Phase software, please contact the Smart-Phase repository owner.
 
 ## Python utility scripts
@@ -14,7 +14,7 @@ For more detail see the section [README](/python/README.md).
 
 ## Docker image
 
-Eventually this base directory will contain the Docker script for a [Smart-Phase](smart-phase) and
+Eventually this base directory will contain the Docker script for a [Smart-Phase](https://github.com/paulhager/smart-phase) and
 utility script container.
 
 ## LICENCE
@@ -49,5 +49,3 @@ statement that reads ‘Copyright (c) 2005-2012’ should be interpreted as bein
 identical to a statement that reads ‘Copyright (c) 2005, 2006, 2007, 2008,
 2009, 2010, 2011, 2012’."
 ```
-
-<!-- References -->
