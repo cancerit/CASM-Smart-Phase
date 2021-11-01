@@ -35,6 +35,7 @@ unflagged (not post processed) CaVEMan generated VCF
 """
 import datetime
 import os
+import re
 import sys
 
 import vcfpy
@@ -72,16 +73,39 @@ def get_last_vcf_process_index(header_lines, key_prefix):
         return None
 
 
+def parse_sphase_output(sphaseout, cutoff, exclude_flags):
+    mnvs = {}
+    with open(sphaseout, "r") as readspout:
+        while True:
+            line = readspout.readline()
+            if not line or line.startswith("Denovo count"):
+                break
+            line = line.rstrip()
+            # 1-1627162-1627363       1-1627262-G-A   1-1627263-G-A   1       0.1999724805754193
+            (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
+            if float(score) < cutoff or int(flag) & exclude_flags:
+                continue
+            (contig, startpos) = start.split("-", maxsplit=2)
+            (contig, endpos) = end.split("-", maxsplit=2)
+            if not contig in mnvs:
+                mnvs[contig] = {}
+            mnvs[contig][int(startpos)] = int(endpos)
+    return mnvs
+
+
 class MNVMerge:
     """
     Class containing VCF parsing and MNV merging code
     """
 
-    def __init__(self, vcfIn, vcfOut, run_script, arg_str):
+    def __init__(self, vcfIn, vcfOut, spout, cutoff, exclude, run_script, arg_str):
         self.vcfinname = os.path.basename(vcfIn)
         self.vcfin = vcfpy.Reader.from_path(vcfIn)
         self.vcfout = vcfOut
+        self.spout = spout
+        self.cutoff = cutoff
         self.run_script = run_script
+        self.exclude_flags = exclude
         self.arg_str = arg_str
         self.longest_MNV = 2
 
@@ -244,56 +268,46 @@ class MNVMerge:
             self.longest_MNV = len(snv_list)
         return mnv
 
-    def perform_mnv_merge(self):
+    def perform_mnv_merge_to_vcf(self):
         """
         Iterate through VCF records. Outputting a new VCF with
         requested filters removed.
         """
+        mnvs = parse_sphase_output(self.spout, self.cutoff, self.exclude_flags)
         reader = self.vcfin
         # Make a copy of the header
         writer_header = reader.header.copy()
-        prev_snv = []
-        prev_pos = 0
-        prev_contig = ""
-        vars_to_print = []
-        for variant in reader:
-
-            # If this variant is not adjacent to the previous
-            if len(prev_snv) > 0 and (
-                str(variant.CHROM) != prev_contig or int(variant.POS) > prev_pos + 1
-            ):
-
-                # Print any already adjacent SNVs as MNVs
-                if len(prev_snv) > 1:
-                    # MNVs require parsing and printing
-                    mnv_rec = self.merge_snv_to_mnv(prev_snv)
-                    vars_to_print.append(mnv_rec)
-                    prev_snv.clear()
-
-                else:
-                    # length is only one so a single SNV to print back to VCF
-                    vars_to_print.append(prev_snv.pop())
-
-            prev_snv.append(variant)
-            prev_contig = str(variant.CHROM)
-            prev_pos = int(variant.POS)
-
-        # Print any already adjacent SNVs as MNVs
-        if len(prev_snv) > 1:
-            # MNVs require parsing and printing
-            mnv_rec = self.merge_snv_to_mnv(prev_snv)
-            vars_to_print.append(mnv_rec)
-            prev_snv.clear()
-
-        else:
-            # length is only one so a single SNV to print back to VCF
-            vars_to_print.append(prev_snv.pop())
-
         writer_header = self.parse_header_add_merge_and_process(writer_header)
-
         writer = vcfpy.Writer.from_path(self.vcfout, writer_header)
 
-        for vars in vars_to_print:
-            writer.write_record(vars)
-
+        snvs = []
+        start_pos_mnv = 0
+        start_contig_mnv = ""
+        in_mnv = False
+        # prev_pos = 0
+        # prev_contig = ""
+        # vars_to_print = []
+        for variant in reader:
+            # start of a
+            if variant.CHROM in mnvs:
+                # Start position in an mnv
+                if int(variant.POS) in mnvs[variant.CHROM]:
+                    in_mnv = True
+                    start_pos_mnv = int(variant.POS)
+                    start_contig_mnv = variant.CHROM
+                    snvs.append(variant)
+                # In an MNV and waiting for finish
+                elif (
+                    in_mnv and int(variant.POS) <= mnvs[start_contig_mnv][start_pos_mnv]
+                ):
+                    snvs.append(variant)
+                    if int(variant.POS) == mnvs[start_contig_mnv][start_pos_mnv]:
+                        mnv_rec = self.merge_snv_to_mnv(snvs)
+                        writer.write_record(mnv_rec)
+                        snvs.clear()
+                        in_mnv = False
+                else:
+                    writer.write_record(variant)
+            else:
+                writer.write_record(variant)
         writer.close()
