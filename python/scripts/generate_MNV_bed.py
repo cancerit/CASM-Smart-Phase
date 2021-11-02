@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #   LICENSE
 # Copyright (c) 2021 Genome Research Ltd.
 # Author: Cancer Genome Project cgphelp@sanger.ac.uk
@@ -30,7 +31,7 @@
 #
 #
 """
-merge_vcf_MNVs.py: Script to merge adjacent SNVs in a CaVEMan generated
+Script to merge adjacent SNVs in a CaVEMan generated
 VCF into a new VCF containing SNVs and merged MNVs in order to be
 processed by Smart-phase
 """

@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #   LICENSE
 # Copyright (c) 2021 Genome Research Ltd.
 # Author: Cancer Genome Project cgphelp@sanger.ac.uk
