@@ -2,8 +2,8 @@
 
 ##   LICENSE
 # Copyright (c) 2021 Genome Research Ltd.
-# Author: Cancer Genome Project cgphelp@sanger.ac.uk
 #
+# Author: CASM/Cancer IT <cgphelp@sanger.ac.uk>
 #
 # This file is part of CASM-Smart-Phase.
 #
