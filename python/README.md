@@ -10,7 +10,7 @@
 
 ### Without Docker image
 
-- Requires >= python 3.9
+- Requires >= python 3.7
 
 ```bash
 # Setup a python virtual environment.
