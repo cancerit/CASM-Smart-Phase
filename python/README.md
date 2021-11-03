@@ -10,7 +10,7 @@
 
 ### Without Docker image
 
-- Requires >= python 3.6
+- Requires >= python 3.9
 
 ```bash
 # Setup a python virtual environment.
@@ -29,7 +29,7 @@ pip install ./
 
 ### [scripts/generate_MNV.bed.py](scripts/generate_MNV_bed.py)
 
-Generate a bed file of adjacent SNVs in a VCF file. Allows for targeted analysis in smart-phase idsing the `-g` option
+Generate a bed file of adjacent SNVs in a VCF file. Allows for targeted analysis in smart-phase using the `-g` option
 
 ```bash
 $ generate_MNV_bed.py -h
