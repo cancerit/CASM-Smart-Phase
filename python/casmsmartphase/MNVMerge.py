@@ -29,15 +29,19 @@ import datetime
 import logging
 import os
 import re
+from typing import List
+from typing import Optional
 
 import vcfpy
 
 # Setup base variables for the VCF process line
-base_vcf_process_key = "vcfProcessLog"
-base_vcf_process_log = "<InputVCF=<{}>,InputVCFSource=<{}>,InputVCFParam=<{}>>"
+BASE_VCF_PROCESS_KEY = "vcfProcessLog"
+BASE_VCF_PROCESS_LOG = "<InputVCF=<{}>,InputVCFSource=<{}>,InputVCFParam=<{}>>"
 
 
-def get_last_vcf_process_index(header_lines, key_prefix):
+def get_last_vcf_process_index(
+    header_lines: List[vcfpy.header.HeaderLine], key_prefix: str
+) -> Optional[int]:
     """
     Find all header lines matching the prefix key_prefix.
     Where they do match, find the greatest index, so we can increment
@@ -101,13 +105,13 @@ class MNVMerge:
         self.arg_str = arg_str
         self.longest_MNV = 2
 
-    def get_process_header_line(self, existing_head):
+    def get_process_header_line(self, existing_head: vcfpy.Header):
         """
         Generates a new vcfProvcess header line for this process.
         Uses the existing header to check whether we require an index
         and (UTC) date appended to the key
         """
-        head_key = base_vcf_process_key
+        head_key = BASE_VCF_PROCESS_KEY
         index = get_last_vcf_process_index(existing_head.lines, head_key)
         # Test for key without date - gives all lines
         if index is not None and index > 0:
@@ -121,7 +125,7 @@ class MNVMerge:
             head_key = head_key + "." + str(index + 1)
         new_process_line = vcfpy.HeaderLine(
             key=head_key,
-            value=base_vcf_process_log.format(
+            value=BASE_VCF_PROCESS_LOG.format(
                 self.vcfinname, self.run_script, self.arg_str
             ),
         )
@@ -140,7 +144,7 @@ class MNVMerge:
         )
         return new_line
 
-    def parse_header_add_merge_and_process(self, writer_header):
+    def parse_header_add_merge_and_process(self, writer_header: vcfpy.Header):
         """
         Parse VCF header from input. Add a process line and MNV
         format lines
