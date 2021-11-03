@@ -69,7 +69,7 @@ parser.add_argument(
     "--output",
     metavar="output.bed",
     dest="output",
-    help="path to write output bed file",
+    help="Path to write output bed file",
     required=False,
     default="mnv.bed",
 )

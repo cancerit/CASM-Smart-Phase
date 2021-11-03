@@ -95,7 +95,7 @@ parser.add_argument(
     "-o",
     "--output",
     metavar="output.vcf",
-    help="path to write output VCF file",
+    help="Path to write output VCF file",
     required=False,
     default="<vcfin>.MNV.vcf",
 )
