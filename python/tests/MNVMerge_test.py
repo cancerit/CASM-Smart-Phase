@@ -1,11 +1,11 @@
 #   LICENSE
-# Copyright (c) 2018-2019 Genome Research Ltd.
+# Copyright (c) 2021 Genome Research Ltd.
 # Author: Cancer Genome Project cgphelp@sanger.ac.uk
 #
 #
-# This file is part of vcf_flag_modifier.
+# This file is part of CASM-Smart-Phase.
 #
-# vcf_flag_modifier is free software: you can redistribute it and/or modify it under
+# This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Affero General Public License as published by the Free
 # Software Foundation; either version 3 of the License, or (at your option) any
 # later version.
