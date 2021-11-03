@@ -26,9 +26,9 @@ Python module for methods reading/parsing and merging MNVs in an
 unflagged (not post processed) CaVEMan generated VCF
 """
 import datetime
+import logging
 import os
 import re
-import sys
 
 import vcfpy
 
@@ -174,20 +174,14 @@ class MNVMerge:
         filter = []
         if snv_list[0].QUAL:
             do_qual = 1
-            print(
-                "Found a QUAL value, output will be a mean of all QUAL.",
-                file=sys.stderr,
-                end="\n",
-            )
+            logging.warning("Found a QUAL value, output will be a mean of all QUAL.")
         else:
             qual = snv_list[0].QUAL
 
         if snv_list[0].FILTER:
             do_filter = 1
-            print(
-                "Found a FILTER value, output will be all FILTERs encountered at all bases.",
-                file=sys.stderr,
-                end="\n",
+            logging.warning(
+                "Found a FILTER value, output will be all FILTERs encountered at all bases."
             )
         else:
             filter = snv_list[0].FILTER
@@ -240,12 +234,13 @@ class MNVMerge:
 
             # If we want to append filters
             if do_filter:
+                # If we want to append qualities to generate a mean
                 filter.append(var.FILTER)
-            # If we want to append qualities to generate a mean
 
             if do_qual:
                 qual += var.QUAL
             id.append(var.ID[0])
+
         alt = [vcfpy.Substitution(type_="MNV", value=alt_str)]
 
         # Make the quality a mean value for MNVs
@@ -276,9 +271,6 @@ class MNVMerge:
         start_pos_mnv = 0
         start_contig_mnv = ""
         in_mnv = False
-        # prev_pos = 0
-        # prev_contig = ""
-        # vars_to_print = []
         for variant in reader:
             # start of a
             if variant.CHROM in mnvs:

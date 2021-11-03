@@ -103,7 +103,7 @@ parser.add_argument(
 parser.add_argument(
     "-c",
     "--cutoff-score",
-    default=0,
+    default=0.0,
     type=float,
     dest="cutoff",
     help="Exclude any MNVs with a phased score < cutoff",
