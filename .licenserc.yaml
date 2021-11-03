@@ -81,5 +81,6 @@ header:
     - 'tests/htmlcov/'
     - '.eggs/'
     - 'python/setup.cfg'
+    - 'python/tox.ini'
 
   comment: on-failure
