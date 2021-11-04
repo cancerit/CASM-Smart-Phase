@@ -80,9 +80,8 @@ def parse_sphase_output(sphaseout, cutoff, exclude_flags):
                 (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
                 if float(score) < cutoff or int(flag) & exclude_flags:
                     continue
-                (contig, startpos, tmp) = start.split("-", maxsplit=2)
-                (contig, endpos, tmp) = end.split("-", maxsplit=2)
-                tmp.clear()
+                (contig, startpos, _tmp) = start.split("-", maxsplit=2)
+                (contig, endpos, _tmp) = end.split("-", maxsplit=2)
                 if not contig in mnvs:
                     mnvs[contig] = {}
                 mnvs[contig][int(startpos)] = int(endpos)
