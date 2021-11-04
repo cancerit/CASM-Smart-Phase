@@ -34,7 +34,6 @@ import sys
 
 import pkg_resources  # part of setuptools
 import vcfpy
-from casmsmartphase.MNVMerge import MNVMerge
 
 VERSION = pkg_resources.require("casmsmartphase")[0].version
 

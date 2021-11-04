@@ -36,11 +36,14 @@ OUTPUT_VCF = "test_data/test_output.vcf"
 EXP_RES_VCF = "test_data/test_exp_result.vcf"
 RUN_SCRIPT = "pytest_MNVMerge"
 ARG_STR = "x=test_Arg_str"
+SPOUT = "test_data/sample.phased.output"
+CUTOFF = 0.0
+EXCLUDE = 2
 
 
 def compare_variants(vcf1, vcf2):
     """
-    Utility method for comparison of VCF variants in the cyvcf2 format
+    Utility method for comparison of VCF variants in vcfpy format
     """
     for var1, var2 in zip(vcf1, vcf2):
         assert var1.CHROM == var2.CHROM
@@ -56,7 +59,7 @@ def compare_variants(vcf1, vcf2):
 
 def compare_vcf_header(vcf1, vcf2):
     """
-    Utility method for comparison of VCF headers in the cyvcf2 format
+    Utility method for comparison of VCF headers in the vcfpy format
     """
     # assert vcf1.header.lines == vcf2.header.lines
 
@@ -156,13 +159,17 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
     ],
 )
 def test_generate_new_increment_header(existing_line, n, exp_line):
-    merge_obj = MNVMerge(INPUT_VCF, OUTPUT_VCF, RUN_SCRIPT, ARG_STR)
+    merge_obj = MNVMerge(
+        INPUT_VCF, OUTPUT_VCF, SPOUT, CUTOFF, EXCLUDE, RUN_SCRIPT, ARG_STR
+    )
     new_header_line = merge_obj.generate_new_increment_header(existing_line, n)
     assert new_header_line == exp_line
 
 
 def test_perform_mnv_merge():
-    merge_obj = MNVMerge(INPUT_VCF, OUTPUT_VCF, RUN_SCRIPT, ARG_STR)
-    merge_obj.perform_mnv_merge()
+    merge_obj = MNVMerge(
+        INPUT_VCF, OUTPUT_VCF, SPOUT, CUTOFF, EXCLUDE, RUN_SCRIPT, ARG_STR
+    )
+    merge_obj.perform_mnv_merge_to_vcf()
     assert compare_vcf_files(OUTPUT_VCF, EXP_RES_VCF)
     os.remove(OUTPUT_VCF)

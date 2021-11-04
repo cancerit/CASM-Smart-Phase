@@ -49,13 +49,12 @@ def get_last_vcf_process_index(
     Returns greatest index found in the header key.
     """
     matching_head_keys = set(
-        line.key
-        for line in (
-            line
+        [
+            line.key
             for line in header_lines
             if isinstance(line, vcfpy.header.HeaderLine)
             and line.key.startswith(key_prefix)
-        )
+        ]
     )
     # Now find the maximum indices of the keys found
     indices = [
@@ -77,15 +76,20 @@ def parse_sphase_output(sphaseout, cutoff, exclude_flags):
             if not line or line.startswith("Denovo count"):
                 break
             line = line.rstrip()
-            # 1-1627162-1627363       1-1627262-G-A   1-1627263-G-A   1       0.1999724805754193
-            (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
-            if float(score) < cutoff or int(flag) & exclude_flags:
-                continue
-            (contig, startpos) = start.split("-", maxsplit=2)
-            (contig, endpos) = end.split("-", maxsplit=2)
-            if not contig in mnvs:
-                mnvs[contig] = {}
-            mnvs[contig][int(startpos)] = int(endpos)
+            try:
+                (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
+                if float(score) < cutoff or int(flag) & exclude_flags:
+                    continue
+                (contig, startpos, tmp) = start.split("-", maxsplit=2)
+                (contig, endpos, tmp) = end.split("-", maxsplit=2)
+                tmp.clear()
+                if not contig in mnvs:
+                    mnvs[contig] = {}
+                mnvs[contig][int(startpos)] = int(endpos)
+            except ValueError as err:
+                logging.fatal(
+                    f"ValueError err={err} at line='{line}', start={start}, end={end}"
+                )
     return mnvs
 
 
@@ -94,7 +98,16 @@ class MNVMerge:
     Class containing VCF parsing and MNV merging code
     """
 
-    def __init__(self, vcfIn, vcfOut, spout, cutoff, exclude, run_script, arg_str):
+    def __init__(
+        self,
+        vcfIn: str,
+        vcfOut: str,
+        spout: str,
+        cutoff: float,
+        exclude: int,
+        run_script: str,
+        arg_str: str,
+    ):
         self.vcfinname = os.path.basename(vcfIn)
         self.vcfin = vcfpy.Reader.from_path(vcfIn)
         self.vcfout = vcfOut
@@ -276,7 +289,7 @@ class MNVMerge:
         start_contig_mnv = ""
         in_mnv = False
         for variant in reader:
-            # start of a
+            print(f"{variant.CHROM}-{variant.POS}")
             if variant.CHROM in mnvs:
                 # Start position in an mnv
                 if int(variant.POS) in mnvs[variant.CHROM]:
