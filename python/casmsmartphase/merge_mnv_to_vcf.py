@@ -30,17 +30,9 @@ import os
 from casmsmartphase.MNVMerge import MNVMerge
 
 
-def generate_arg_str(vcfin, output, smart_phased_output, cutoff, exclude):
-    # Define arguments and argument associated methods
-    ag_str = f"vcfin={vcfin},output={output},smart_phased_output={smart_phased_output},cutoff={cutoff},exclude={exclude}"
-    return ag_str
-
-
-def run(vcfin, output, smart_phased_output, cutoff, exclude):
+def run(vcfin, output, smart_phased_output, cutoff, exclude, arg_str):
     # Generate a merged VCF with possible MNVs
     # Open vcf reading module
-    arg_str = generate_arg_str(vcfin, output, smart_phased_output, cutoff, exclude)
-
     mnvmerge = MNVMerge(
         vcfin,
         output,

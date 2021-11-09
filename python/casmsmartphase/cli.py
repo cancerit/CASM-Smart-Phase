@@ -21,6 +21,7 @@
 # statement that reads ‘Copyright (c) 2005-2012’ should be interpreted as being
 # identical to a statement that reads ‘Copyright (c) 2005, 2006, 2007, 2008,
 # 2009, 2010, 2011, 2012’.
+import os
 from functools import wraps
 
 import click
@@ -34,6 +35,7 @@ HELP_CUTOFF = "Exclude any MNVs with a phased score < cutoff"
 HELP_OUTPUT_BED = "Path to write output bed file"
 HELP_OUTPUT_VCF = "Path to write output vcf file"
 HELP_SPHASE_OUT = "The phased output file from Smart-Phase"
+FILEPATH_INPUTS = ["vcfin", "output", "smart_phased_output"]
 
 
 def _file_exists():
@@ -44,6 +46,19 @@ def _file_exists():
         readable=True,
         resolve_path=True,
     )
+
+
+def generate_arg_string(*args, **kwargs):
+    ag_str = ""
+    idx = 0
+    for key, item in kwargs.items():
+        if key in FILEPATH_INPUTS:
+            item = os.path.basename(item)
+        if idx > 0:
+            ag_str += ","
+        ag_str += f"{key}={item}"
+        idx += 1
+    return ag_str
 
 
 def common_params(f):
@@ -77,7 +92,6 @@ def cli():
     metavar="output.bed",
     help=HELP_OUTPUT_BED,
     required=False,
-    default="mnv.bed",
 )
 def generate_bed(*args, **kwargs):
     """
@@ -94,7 +108,7 @@ def generate_bed(*args, **kwargs):
     metavar="output.vcf",
     help=HELP_OUTPUT_VCF,
     required=False,
-    default="<vcfin>.MNV.vcf",
+    default="output.MNV.vcf",
 )
 @click.option(
     "-p",
@@ -123,4 +137,6 @@ def merge_mnvs(*args, **kwargs):
     """
     Merge MNVs parsed by smartphase into a CaVEMan SNV and MNV vcf file
     """
+    arg_str = generate_arg_string(*args, **kwargs)
+    kwargs["arg_str"] = arg_str
     merge_mnv_to_vcf.run(*args, **kwargs)
