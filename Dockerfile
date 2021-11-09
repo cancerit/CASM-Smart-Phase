@@ -85,7 +85,7 @@ COPY --from=builder $OPT $OPT
 RUN adduser --disabled-password --gecos '' ubuntu && chsh -s /bin/bash && mkdir -p /home/ubuntu
 USER ubuntu
 
-RUN generate_MNV_bed.py --version
+RUN casmsmartphase generate-bed --version
 
 WORKDIR /home/ubuntu
 
