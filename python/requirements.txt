@@ -1,0 +1,4 @@
+click==8.0.3
+pytest==5.1.1
+setuptools==58.3.0
+vcfpy==0.13.0

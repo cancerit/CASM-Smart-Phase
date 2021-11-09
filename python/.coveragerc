@@ -1,0 +1,6 @@
+[run]
+branch = true
+
+[report]
+fail_under = 70
+precision = 2

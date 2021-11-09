@@ -1,0 +1,48 @@
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+    -   id: check-added-large-files
+        args: ['--maxkb=3000']
+    -   id: check-ast
+    -   id: check-executables-have-shebangs
+    -   id: check-shebang-scripts-are-executable
+    -   id: check-merge-conflict
+    -   id: check-toml
+    -   id: check-yaml
+    -   id: detect-aws-credentials
+        args: [--allow-missing-credentials]
+    -   id: detect-private-key
+    -   id: end-of-file-fixer
+    -   id: name-tests-test
+    -   id: requirements-txt-fixer
+        args: [python/requirements.txt]
+    -   id: trailing-whitespace
+-   repo: https://github.com/executablebooks/mdformat
+    rev: 0.7.9
+    hooks:
+    -   id: mdformat
+-   repo: https://github.com/psf/black
+    rev: 21.10b0
+    hooks:
+      - id: black
+        language_version: python3
+        args: [python/]
+        types: [python]
+-   repo: https://github.com/yunojuno/pre-commit-xenon
+    rev: v0.1
+    hooks:
+    - id: xenon
+      args: ["--max-absolute=D"]
+-   repo: https://github.com/hadolint/hadolint
+    rev: v2.4.1
+    hooks:
+    - id: hadolint-docker
+-   repo: https://github.com/jendrikseipp/vulture
+    rev: 'v2.3'
+    hooks:
+    - id: vulture
+-   repo: https://github.com/asottile/reorder_python_imports
+    rev: v2.6.0
+    hooks:
+    -   id: reorder-python-imports
