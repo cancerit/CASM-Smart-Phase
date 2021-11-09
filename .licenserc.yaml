@@ -80,7 +80,6 @@ header:
     - 'MANIFEST.in'
     - 'tests/htmlcov/'
     - '.eggs/'
-    - 'python/setup.cfg'
     - 'python/tox.ini'
     - 'python/test_data/'
 
