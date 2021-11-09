@@ -30,13 +30,17 @@ import pytest
 import vcfpy
 from casmsmartphase.MNVMerge import get_last_vcf_process_index
 from casmsmartphase.MNVMerge import MNVMerge
+from casmsmartphase.MNVMerge import parse_sphase_output
 
 INPUT_VCF = "test_data/test_input.vcf.gz"
+FILT_QUAL_INPUT_VCF = "test_data/test_input_filt_qual.vcf.gz"
 OUTPUT_VCF = "test_data/test_output.vcf"
+FILT_QUAL_EXP_RES_VCF = "test_data/test_filt_qual_exp_result.vcf"
 EXP_RES_VCF = "test_data/test_exp_result.vcf"
 RUN_SCRIPT = "pytest_MNVMerge"
 ARG_STR = "x=test_Arg_str"
 SPOUT = "test_data/sample.phased.output"
+BAD_SPOUT = "test_data/sample.phased.output"
 CUTOFF = 0.0
 EXCLUDE = 2
 
@@ -116,6 +120,21 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
 
 
 @pytest.mark.parametrize(
+    "sphaseout,cutoff,exclude_flags,exp_result",
+    [
+        (SPOUT, 0.0, 2, {"chr1": {1627262: 1627263}}),
+        (SPOUT, 0.1, 1, {}),
+    ],
+)
+def test_parse_sphase_output(sphaseout, cutoff, exclude_flags, exp_result):
+    assert parse_sphase_output(sphaseout, cutoff, exclude_flags) == exp_result
+
+
+def test_parse_sphase_output_err():
+    parse_sphase_output(BAD_SPOUT, CUTOFF, EXCLUDE)
+
+
+@pytest.mark.parametrize(
     "existing_line, n, exp_line",
     [
         (
@@ -166,10 +185,15 @@ def test_generate_new_increment_header(existing_line, n, exp_line):
     assert new_header_line == exp_line
 
 
-def test_perform_mnv_merge():
-    merge_obj = MNVMerge(
-        INPUT_VCF, OUTPUT_VCF, SPOUT, CUTOFF, EXCLUDE, RUN_SCRIPT, ARG_STR
-    )
+@pytest.mark.parametrize(
+    "invcf,exp_res",
+    [
+        (INPUT_VCF, EXP_RES_VCF),
+        (FILT_QUAL_INPUT_VCF, FILT_QUAL_EXP_RES_VCF),
+    ],
+)
+def test_perform_mnv_merge(invcf, exp_res):
+    merge_obj = MNVMerge(invcf, OUTPUT_VCF, SPOUT, CUTOFF, EXCLUDE, RUN_SCRIPT, ARG_STR)
     merge_obj.perform_mnv_merge_to_vcf()
-    assert compare_vcf_files(OUTPUT_VCF, EXP_RES_VCF)
+    assert compare_vcf_files(OUTPUT_VCF, exp_res)
     os.remove(OUTPUT_VCF)

@@ -1,0 +1,16 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[tool.vulture]
+exclude = ["venv/", "cli.py"]
+ignore_decorators = ["@app.route", "@require_*", "@cli.command"]
+ignore_names = ["visit_*", "do_*"]
+make_whitelist = true
+min_confidence = 80
+paths = ["python/casmsmartphase"]
+sort_by_size = true
+verbose = false

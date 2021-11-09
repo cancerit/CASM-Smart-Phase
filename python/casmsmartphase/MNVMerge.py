@@ -57,15 +57,15 @@ def get_last_vcf_process_index(
         ]
     )
     # Now find the maximum indices of the keys found
-    indices = [
-        int(key_part[1])
-        for key_part in (key.rsplit(".", 1) for key in matching_head_keys)
-        if len(key_part) == 2 and key_part[1].isdigit
-    ]
-    if indices:
-        return max(indices)
-    else:
-        return None
+    max_index = None
+    for key_part in (key.rsplit(".", 1) for key in matching_head_keys):
+        if (
+            len(key_part) == 2
+            and key_part[1].isdigit
+            and (max_index is None or int(key_part[1]) > max_index)
+        ):
+            max_index = int(key_part[1])
+    return max_index
 
 
 def parse_sphase_output(sphaseout, cutoff, exclude_flags):
@@ -76,19 +76,15 @@ def parse_sphase_output(sphaseout, cutoff, exclude_flags):
             if not line or line.startswith("Denovo count"):
                 break
             line = line.rstrip()
-            try:
-                (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
-                if float(score) < cutoff or int(flag) & exclude_flags:
-                    continue
-                (contig, startpos, _tmp) = start.split("-", maxsplit=2)
-                (contig, endpos, _tmp) = end.split("-", maxsplit=2)
-                if not contig in mnvs:
-                    mnvs[contig] = {}
-                mnvs[contig][int(startpos)] = int(endpos)
-            except ValueError as err:
-                logging.fatal(
-                    f"ValueError err={err} at line='{line}', start={start}, end={end}"
-                )
+            (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
+            if float(score) < cutoff or int(flag) & exclude_flags:
+                continue
+            (contig, startpos, _tmp) = start.split("-", maxsplit=2)
+            (contig, endpos, _tmp) = end.split("-", maxsplit=2)
+            if not contig in mnvs:
+                mnvs[contig] = {}
+            mnvs[contig][int(startpos)] = int(endpos)
+
     return mnvs
 
 
@@ -194,13 +190,15 @@ class MNVMerge:
         else:
             qual = snv_list[0].QUAL
 
-        if snv_list[0].FILTER:
-            do_filter = 1
-            logging.warning(
-                "Found a FILTER value, output will be all FILTERs encountered at all bases."
-            )
-        else:
-            filter = snv_list[0].FILTER
+        do_filter = 0
+        filter = []
+        for snv in snv_list:
+            if snv.FILTER:
+                do_filter = 1
+                logging.warning(
+                    "Found a FILTER value, output will be all FILTERs encountered at all bases."
+                )
+                break
 
         chrom = snv_list[0].CHROM
         pos = snv_list[0].POS
@@ -251,7 +249,8 @@ class MNVMerge:
             # If we want to append filters
             if do_filter:
                 # If we want to append qualities to generate a mean
-                filter.append(var.FILTER)
+                for f in var.FILTER:
+                    filter.append(f)
 
             if do_qual:
                 qual += var.QUAL
@@ -266,7 +265,6 @@ class MNVMerge:
         mnv = vcfpy.Record(
             chrom, pos, id, ref, alt, qual, filter, info, format, calls_dict.values()
         )
-
         if len(snv_list) > self.longest_MNV:
             self.longest_MNV = len(snv_list)
         return mnv
@@ -288,7 +286,6 @@ class MNVMerge:
         start_contig_mnv = ""
         in_mnv = False
         for variant in reader:
-            print(f"{variant.CHROM}-{variant.POS}")
             if variant.CHROM in mnvs:
                 # Start position in an mnv
                 if int(variant.POS) in mnvs[variant.CHROM]:

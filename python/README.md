@@ -2,9 +2,9 @@
 
 - [Installation](#installation)
   - [Without Docker image](#without-docker-image)
-- [Python Utility Scripts](#python-utility-scripts)
-  - [scripts/generate_MNV.bed.py](#scriptsgenerate_mnvbedpy)
-  - [scripts/merge_vcf_MNVs.py](#scriptsmerge_vcf_mnvspy)
+- [Python Utility Commands](#python-utility-commands)
+  - [generate-bed](#generate-bed)
+  - [merge-mnvs](#merge-mnvs)
 
 ## Installation
 
@@ -23,51 +23,45 @@ cd CASM-Smart-Phase/python
 pip install ./
 ```
 
-**Alternatively use the Docker container**
+**Alternatively use the CASM-Smrt-Phase Docker container**
 
-## Python Utility Scripts
+## Python Utility Commands
 
-### [scripts/generate_MNV.bed.py](scripts/generate_MNV_bed.py)
+### generate-bed
 
 Generate a bed file of adjacent SNVs in a VCF file. Allows for targeted analysis in smart-phase using the `-g` option
 
 ```bash
-$ generate_MNV_bed.py -h
-usage: generate_MNV_bed.py [-h] [-v] -f input.vcf[.gz] [-o output.bed]
+$ casmsmartphase generate-bed --help
+Usage: casmsmartphase generate-bed [OPTIONS]
 
-Generate a bed file of adjacent SNVs in a VCF for smartphase analysis
+  Generate a bed file of adjacent SNVs in a VCF for smartphase analysis
 
-optional arguments:
-  -h, --help            Show this help message and exit
-  -v, --version         Print version information
-  -f input.vcf[.gz], --vcfin input.vcf[.gz]
-                        Path to input VCF file
-  -o output.bed, --output output.bed
+Options:
+  -f, --vcfin FILE         Path to input VCF file  [required]
+  -o, --output output.bed  Path to write output bed file
+  --help                   Show this message and exit.
 ```
 
-### [scripts/merge_vcf_MNVs.py](scripts/merge_vcf_MNVs.py)
+### merge-mnvs
 
 Merge MNVs from original VCF using the output from smart-phase
 
 ```bash
-$ merge_vcf_MNVs.py -h
-usage: merge_vcf_MNVs.py [-h] -f input.vcf[.gz] -p sample.phased.output
-                         [-o output.vcf] [-c CUTOFF] [-x EXCLUDE] [-v]
+$ casmsmartphase merge-mnvs --help
+Usage: casmsmartphase merge-mnvs [OPTIONS]
 
-Merge adjacent SNVs in a VCF into a new VCF containing SNVs and merged MNVs
+  Merge MNVs parsed by smartphase into a CaVEMan SNV and MNV vcf file
 
-optional arguments:
-  -h, --help            Show this help message and exit
-  -f input.vcf[.gz], --vcfin input.vcf[.gz]
-                        Path to input VCF file
-  -p sample.phased.output, --smart-phased-output sample.phased.output
-                        The phased output file from Smart-Phase
-  -o output.vcf, --output output.vcf
-                        Path to write output VCF file
-  -c CUTOFF, --cutoff-score CUTOFF
-                        Exclude any MNVs with a phased score < cutoff
-  -x EXCLUDE, --exclude-flag EXCLUDE
-                        Exclude phased MNV if it matches any of the exclude
-                        flag bits
-  -v, --version         Print version information
+Options:
+  -f, --vcfin FILE                Path to input VCF file  [required]
+  -o, --output output.vcf         Path to write output vcf file
+  -p, --smart-phased-output sample.phased.output
+                                  The phased output file from Smart-Phase
+                                  [required]
+  -c, --cutoff FLOAT              Exclude any MNVs with a phased score <
+                                  cutoff
+  -x, --exclude INTEGER           Exclude phased MNV if it matches any of the
+                                  exclude flag bits
+  --help                          Show this message and exit.
 ```

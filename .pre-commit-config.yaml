@@ -42,7 +42,6 @@ repos:
     rev: 'v2.3'
     hooks:
     - id: vulture
-      args: [python/scripts/merge_vcf_MNVs.py, python/casmsmartphase, python, python/tests]
 -   repo: https://github.com/asottile/reorder_python_imports
     rev: v2.6.0
     hooks:
