@@ -36,6 +36,7 @@ import datetime
 import logging
 import os
 import re
+from typing import Dict
 from typing import List
 from typing import Optional
 
@@ -75,7 +76,7 @@ def get_last_vcf_process_index(
     return max_index
 
 
-def parse_sphase_output(sphaseout, cutoff, exclude_flags):
+def parse_sphase_output(sphaseout: str, cutoff: float, exclude_flags: int) -> Dict:
     mnvs = {}
     with open(sphaseout, "r") as readspout:
         while True:
@@ -120,7 +121,9 @@ class MNVMerge:
         self.arg_str = arg_str
         self.longest_MNV = 2
 
-    def get_process_header_line(self, existing_head: vcfpy.Header):
+    def get_process_header_line(
+        self, existing_head: vcfpy.Header
+    ) -> vcfpy.header.HeaderLine:
         """
         Generates a new vcfProvcess header line for this process.
         Uses the existing header to check whether we require an index
@@ -146,7 +149,9 @@ class MNVMerge:
         )
         return new_process_line
 
-    def generate_new_increment_header(self, existing_line, n):
+    def generate_new_increment_header(
+        self, existing_line: vcfpy.header.HeaderLine, n: int
+    ) -> vcfpy.header.HeaderLine:
         """
         Taking a header line, and an int n, generates a copy of that header
         line with the key and description updates to include said
@@ -159,7 +164,9 @@ class MNVMerge:
         )
         return new_line
 
-    def parse_header_add_merge_and_process(self, writer_header: vcfpy.Header):
+    def parse_header_add_merge_and_process(
+        self, writer_header: vcfpy.Header
+    ) -> vcfpy.Header:
         """
         Parse VCF header from input. Add a process line and MNV
         format lines
@@ -183,7 +190,7 @@ class MNVMerge:
 
         return writer_header
 
-    def merge_snv_to_mnv(self, snv_list):
+    def merge_snv_to_mnv(self, snv_list: List[vcfpy.Record]) -> vcfpy.Record:
         """
         Merge snvs from list into a single variant and output to VCF
         """
