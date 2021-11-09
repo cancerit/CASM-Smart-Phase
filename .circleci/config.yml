@@ -38,8 +38,8 @@ jobs:
             echo "$QUAYIO_PASSWORD" | docker login -u "$QUAYIO_USER" --password-stdin quay.io
             docker build -t $IMAGE_NAME:$CLEAN_BRANCH .
             echo 'Verify program(s) from this repo'
-            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH merge_vcf_MNVs.py --version
-            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH generate_MNV_bed.py --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH casmsmartphase generate-bed --version
+            docker run -t --rm $IMAGE_NAME:$CLEAN_BRANCH casmsmartphase merge-mnvs --version
             if [ "$CIRCLE_TAG" = "$BRANCH_OR_TAG" ]; then
               echo 'Pushing image'
               docker push $IMAGE_NAME:$CLEAN_BRANCH
