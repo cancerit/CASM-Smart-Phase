@@ -2,7 +2,7 @@
 
 | Master                                        | Develop                                         |
 | --------------------------------------------- | ----------------------------------------------- |
-| [![Main Badge][circle-master]][circle-master] | [![Develop Badge][circle-develop]][circle-develop] |
+| [![Main Badge][circle-master]][circle-master-base] | [![Develop Badge][circle-develop]][circle-develop-base] |
 
 - [Python utility scripts](#python-utility-scripts)
 - [Docker image](#docker-image)
@@ -57,5 +57,7 @@ identical to a statement that reads ‘Copyright (c) 2005, 2006, 2007, 2008,
 <!-- Reference Links -->
 
 [circle-develop]: https://circleci.com/gh/cancerit/CASM-Smart-Phase/tree/develop.svg?style=shield
+[circle-develop-base]: https://circleci.com/gh/cancerit/CASM-Smart-Phase/tree/develop
 [circle-master]: https://circleci.com/gh/cancerit/CASM-Smart-Phase/tree/main.svg?style=shield
+[circle-master-base]: https://circleci.com/gh/cancerit/CASM-Smart-Phase/tree/main
 [smart-phase]: https://github.com/paulhager/smart-phase
