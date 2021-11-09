@@ -23,7 +23,9 @@ cd CASM-Smart-Phase/python
 pip install ./
 ```
 
-**Alternatively use the CASM-Smrt-Phase Docker container**
+<!-- markdownlint-disable MD036 -->
+
+**Alternatively use the CASM-Smart-Phase Docker container**
 
 ## Python Utility Commands
 

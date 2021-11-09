@@ -48,10 +48,7 @@ COPY ./python .
 
 # deploy properly
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir ./ \
-# make sure permissions are correct
-&& find $OPT -type d -exec chmod o+rx {} \; \
-&& find $OPT -type f -exec chmod o+r {} \;
+RUN pip install --no-cache-dir ./
 
 ########################## FINAL IMAGE ##########################
 FROM ubuntu:20.04
