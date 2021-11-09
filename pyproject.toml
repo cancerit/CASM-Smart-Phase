@@ -11,6 +11,6 @@ ignore_decorators = ["@app.route", "@require_*", "@cli.command"]
 ignore_names = ["visit_*", "do_*"]
 make_whitelist = true
 min_confidence = 80
-paths = ["python/casmsmartphase"]
+paths = ["python/casmsmartphase", "python/tests"]
 sort_by_size = true
 verbose = false
