@@ -37,6 +37,9 @@ EXP_OUTPUT_FILTER = "test_data/test_filt_qual_exp_result.vcf"
 SMART_PHASE_OUTPUT = "test_data/sample.phased.output"
 CUTOFF = 0.0
 EXCLUDE = 2
+ARG_STR = (
+    "vcfin={},smart_phased_output=sample.phased.output,output={},cutoff=0.0,exclude=2"
+)
 
 
 def compare_files(file_a, file_b):
@@ -54,13 +57,25 @@ def compare_files(file_a, file_b):
 
 
 @pytest.mark.parametrize(
-    "input,output,exp_output",
+    "input,output,exp_output,arg_str",
     [
-        (TEST_INPUT, TEST_OUTPUT, EXP_OUTPUT_NORM),
-        (TEST_INPUT_FILTER, TEST_OUTPUT, EXP_OUTPUT_FILTER),
+        (
+            TEST_INPUT,
+            TEST_OUTPUT,
+            EXP_OUTPUT_NORM,
+            ARG_STR.format(os.path.basename(TEST_INPUT), os.path.basename(TEST_OUTPUT)),
+        ),
+        (
+            TEST_INPUT_FILTER,
+            TEST_OUTPUT,
+            EXP_OUTPUT_FILTER,
+            ARG_STR.format(
+                os.path.basename(TEST_INPUT_FILTER), os.path.basename(TEST_OUTPUT)
+            ),
+        ),
     ],
 )
-def test_merge_mnv_to_vcf(input, output, exp_output):
-    merge_mnv_to_vcf.run(input, output, SMART_PHASE_OUTPUT, CUTOFF, EXCLUDE)
+def test_merge_mnv_to_vcf(input, output, exp_output, arg_str):
+    merge_mnv_to_vcf.run(input, output, SMART_PHASE_OUTPUT, CUTOFF, EXCLUDE, arg_str)
     compare_files(output, exp_output)
     os.remove(output)
