@@ -44,11 +44,11 @@ RUN python3.9 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 
-COPY ./python .
+COPY ./ .
 
 # deploy properly
 # hadolint ignore=DL3013
-RUN pip install --no-cache-dir ./ \
+RUN pip install --no-cache-dir ./python \
 # make sure permissions are correct
 && find $OPT -type d -exec chmod o+rx {} \; \
 && find $OPT -type f -exec chmod o+r {} \;
