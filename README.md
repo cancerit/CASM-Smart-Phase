@@ -10,6 +10,8 @@
 - [Docker image](#docker-image)
 - [LICENCE](#licence)
 
+This code is available as a docker image here [quay.io/repository/wtsicgp/casm-smart-phase](https://quay.io/repository/wtsicgp/casm-smart-phase)
+
 ## Smart-Phase
 
 The docker image also contains [Smart-Phase]
@@ -20,7 +22,7 @@ Please note, we do not support the Smart-Phase software, please contact the Smar
 In order to run smart-phase in the docker image either use the command:
 
 ```bash
-docker run smart-phase:<version> java -jar /opt/wsi-t78/smartPhase.jar
+docker run quay.io/repository/wtsicgp/casm-smart-phase:<version> java -jar /opt/wsi-t78/smartPhase.jar
 
 usage: Welcome to SmartPhase! A dedicated tool designed to assist in the
        rapid and accurate phasing of variant combinations for clinical
