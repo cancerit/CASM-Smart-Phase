@@ -84,14 +84,25 @@ def parse_sphase_output(sphaseout: str, cutoff: float, exclude_flags: int) -> Di
             if not line or line.startswith("Denovo count"):
                 break
             line = line.rstrip()
-            (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
-            if float(score) < cutoff or int(flag) & exclude_flags:
+            try:
+                (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
+                if float(score) < cutoff or int(flag) & exclude_flags:
+                    continue
+                (contig, startpos, _tmp) = start.split("-", maxsplit=2)
+                (contig, endpos, _tmp) = end.split("-", maxsplit=2)
+                if not contig in mnvs:
+                    mnvs[contig] = {}
+                mnvs[contig][int(startpos)] = int(endpos)
+            # Possibly a non phased entry, check for length 2 when split before erroring
+            except ValueError as err:  # Possibly a non phased entry, check for length 2 when split before erroring
+                if len(re.split(r"\s+", line)) != 2:
+                    raise ValueError(
+                        f"Error encountered parsing smart-phase output at line {line}.\nOriginal error {err}"
+                    )
+                logging.info(
+                    f"Skipping line of only 2 items, not a phased variant {line}"
+                )
                 continue
-            (contig, startpos, _tmp) = start.split("-", maxsplit=2)
-            (contig, endpos, _tmp) = end.split("-", maxsplit=2)
-            if not contig in mnvs:
-                mnvs[contig] = {}
-            mnvs[contig][int(startpos)] = int(endpos)
 
     return mnvs
 

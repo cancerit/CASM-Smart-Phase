@@ -47,7 +47,8 @@ EXP_RES_VCF = "test_data/test_exp_result.vcf"
 RUN_SCRIPT = "pytest_MNVMerge"
 ARG_STR = "x=test_Arg_str"
 SPOUT = "test_data/sample.phased.output"
-BAD_SPOUT = "test_data/sample.phased.output"
+BAD_SPOUT = "test_data/bad_sample.phased.output"
+SPOUT_EXCEPT = "test_data/sample.phased.except.output"
 CUTOFF = 0.0
 EXCLUDE = 2
 
@@ -131,6 +132,7 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
     [
         (SPOUT, 0.0, 2, {"chr1": {1627262: 1627263}}),
         (SPOUT, 0.1, 1, {}),
+        (SPOUT_EXCEPT, 0.0, 2, {"chr1": {1627262: 1627263}}),
     ],
 )
 def test_parse_sphase_output(sphaseout, cutoff, exclude_flags, exp_result):
