@@ -38,8 +38,6 @@ jobs:
           key: v1-pc-cache-{{ checksum "pre-commit-cache-key.txt" }}
           paths:
           - ~/.cache/pre-commit
-    variables:
-      PRE_COMMIT_HOME: $(Pipeline.Workspace)/pre-commit-cache
 
   build:
     environment:
