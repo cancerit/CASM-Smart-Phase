@@ -36,6 +36,10 @@ jobs:
       - restore_cache:
           keys:
           - v1-pc-cache-{{ checksum "pre-commit-cache-key.txt" }}
+      - run:
+          command: pip install pre-commit
+      - run:
+          command: pre-commit run --all-files
       - save_cache:
           key: v1-pc-cache-{{ checksum "pre-commit-cache-key.txt" }}
           paths:
