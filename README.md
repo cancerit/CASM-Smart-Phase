@@ -4,11 +4,14 @@
 | --------------------------------------------- | ----------------------------------------------- |
 | [![Main Badge][circle-master]][circle-master-base] | [![Develop Badge][circle-develop]][circle-develop-base] |
 
+- [Container](#container)
 - [Smart-Phase](#smart-phase)
   - [Running Smart-Phase](#running-smart-phase)
 - [Python utility scripts](#python-utility-scripts)
 - [Docker image](#docker-image)
 - [LICENCE](#licence)
+
+## Container
 
 This code is available as a docker image here [quay.io/repository/wtsicgp/casm-smart-phase](https://quay.io/repository/wtsicgp/casm-smart-phase)
 
