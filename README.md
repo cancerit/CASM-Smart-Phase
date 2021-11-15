@@ -1,5 +1,7 @@
 # CASM-Smart-Phase
 
+[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
+
 | Master                                        | Develop                                         |
 | --------------------------------------------- | ----------------------------------------------- |
 | [![Main Badge][circle-master]][circle-master-base] | [![Develop Badge][circle-develop]][circle-develop-base] |
@@ -18,7 +20,8 @@ This code is available as a docker image here [quay.io/repository/wtsicgp/casm-s
 ## Smart-Phase
 
 The docker image also contains [Smart-Phase]
-Please note, we do not support the Smart-Phase software, please contact the Smart-Phase repository owner.
+
+__Please note, we do not support the Smart-Phase software, please contact the Smart-Phase repository owner.__
 
 ### Running Smart-Phase
 
