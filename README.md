@@ -17,19 +17,7 @@ Please note, we do not support the Smart-Phase software, please contact the Smar
 
 ### Running Smart-Phase
 
-In order to run smart-phase in the docker image either use the default command:
-
-```bash
-docker run casm-smart-phase:latest
-
-usage: Welcome to SmartPhase! A dedicated tool designed to assist in the
-       rapid and accurate phasing of variant combinations for clinical
-       analysis. Please refer to the following list of options on how to
-       pass the necessary parameters for use:
-       ....
-```
-
-Or
+In order to run smart-phase in the docker image either use the command:
 
 ```bash
 docker run smart-phase:latest java -jar /opt/wsi-t78/smartPhase.jar
