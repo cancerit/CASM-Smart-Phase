@@ -29,6 +29,7 @@ jobs:
     steps:
       - run:
           command: |
+            ls -la ./
             cp .pre-commit-config.yaml pre-commit-cache-key.txt
             python --version --version >> pre-commit-cache-key.txt
       - restore_cache:
