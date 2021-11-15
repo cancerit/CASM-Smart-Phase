@@ -27,6 +27,7 @@ jobs:
     docker:
       - image: python:3.7.5
     steps:
+      - checkout
       - run:
           command: |
             ls -la ./
