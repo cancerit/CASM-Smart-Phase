@@ -47,7 +47,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 #Install smart-phase
 RUN curl -sSL --retry 10 https://github.com/paulhager/smart-phase/archive/refs/tags/v1.2.0.tar.gz > sphase.tar.gz \
     && tar -zxf sphase.tar.gz
-WORKDIR /tmp/build//smart-phase-1.2.0/
+WORKDIR /tmp/build/smart-phase-1.2.0/
 RUN bash compile.sh \
     && cp smartPhase.jar $OPT/
 
