@@ -21,30 +21,6 @@ jobs:
           command: |
             docker run --rm -v $(pwd):/github/workspace apache/skywalking-eyes header check
 
-  pre-commit:
-    description: |
-      Runs pre-commit hooks on precommit.ci
-    docker:
-      - image: python:3.7.5
-    steps:
-      - checkout
-      - run:
-          command: |
-            ls -la ./
-            cp .pre-commit-config.yaml pre-commit-cache-key.txt
-            python --version --version >> pre-commit-cache-key.txt
-      - restore_cache:
-          keys:
-          - v1-pc-cache-{{ checksum "pre-commit-cache-key.txt" }}
-      - run:
-          command: pip install pre-commit
-      - run:
-          command: pre-commit run --all-files
-      - save_cache:
-          key: v1-pc-cache-{{ checksum "pre-commit-cache-key.txt" }}
-          paths:
-          - ~/.cache/pre-commit
-
   build:
     environment:
       IMAGE_NAME: quay.io/wtsicgp/casm-smart-phase
@@ -77,10 +53,6 @@ workflows:
   build_test:
     jobs:
       - license_chk:
-          filters:
-            tags:
-              only: /.+/
-      - pre-commit:
           filters:
             tags:
               only: /.+/
