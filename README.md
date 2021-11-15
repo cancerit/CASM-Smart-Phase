@@ -4,12 +4,42 @@
 | --------------------------------------------- | ----------------------------------------------- |
 | [![Main Badge][circle-master]][circle-master-base] | [![Develop Badge][circle-develop]][circle-develop-base] |
 
+- [Smart-Phase](#smart-phase)
+  - [Running Smart-Phase](#running-smart-phase)
 - [Python utility scripts](#python-utility-scripts)
 - [Docker image](#docker-image)
 - [LICENCE](#licence)
 
-Project aiming to provide a Docker image of [Smart-Phase]
+## Smart-Phase
+
+The docker image also contains [Smart-Phase]
 Please note, we do not support the Smart-Phase software, please contact the Smart-Phase repository owner.
+
+### Running Smart-Phase
+
+In order to run smart-phase in the docker image either use the default command:
+
+```bash
+docker run casm-smart-phase:latest
+
+usage: Welcome to SmartPhase! A dedicated tool designed to assist in the
+       rapid and accurate phasing of variant combinations for clinical
+       analysis. Please refer to the following list of options on how to
+       pass the necessary parameters for use:
+       ....
+```
+
+Or
+
+```bash
+docker run smart-phase:latest java -jar /opt/wsi-t78/smartPhase.jar
+
+usage: Welcome to SmartPhase! A dedicated tool designed to assist in the
+       rapid and accurate phasing of variant combinations for clinical
+       analysis. Please refer to the following list of options on how to
+       pass the necessary parameters for use:
+       ....
+```
 
 ## Python utility scripts
 
