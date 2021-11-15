@@ -19,7 +19,6 @@ RUN apt-get -yq update \
 && apt-get -yq install --no-install-recommends python3.9 \
 && update-alternatives --install /usr/bin/python python /usr/bin/python3.9 1
 
-
 # not in final image
 # hadolint ignore=DL3008
 RUN apt-get -yq update \
@@ -34,6 +33,7 @@ RUN apt-get -yq update \
     liblzma-dev \
     libcurl4-openssl-dev \
     libmagic-dev \
+    default-jdk \
 && curl -sSL --retry 10 https://bootstrap.pypa.io/get-pip.py > get-pip.py \
 && python3.9 get-pip.py
 
@@ -44,11 +44,20 @@ RUN python3.9 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 
+#Install smart-phase
+RUN curl -sSL --retry 10 https://github.com/paulhager/smart-phase/archive/refs/tags/v1.2.0.tar.gz | tar -zx
+WORKDIR /tmp/build/smart-phase-1.2.0/
+RUN bash compile.sh \
+    && cp smartPhase.jar $OPT/
+
+WORKDIR /tmp/build
+
 COPY ./python .
 
 # deploy properly
 # hadolint ignore=DL3013
 RUN pip install --no-cache-dir ./
+
 
 ########################## FINAL IMAGE ##########################
 FROM ubuntu:20.04
@@ -63,7 +72,7 @@ ENV LANG C.UTF-8
 RUN apt-get -yq update \
 && apt-get -yq install --no-install-recommends software-properties-common libmagic-dev zlib1g curl \
 && add-apt-repository ppa:deadsnakes/ppa \
-&& apt-get -yq install --no-install-recommends python3.9 \
+&& apt-get -yq install --no-install-recommends python3.9 default-jre\
 # make sure all security patches are applied
 && apt-get -yq update && apt-get install -yq --no-install-recommends unattended-upgrades \
 && unattended-upgrade -d -v \
