@@ -25,7 +25,7 @@ jobs:
     description: |
       Runs pre-commit hooks on precommit.ci
     docker:
-      - image: python:<<parameters.python_version>>
+      - image: python:3.7.5
     steps:
       - run:
           command: |
