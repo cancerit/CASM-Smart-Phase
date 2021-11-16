@@ -1,0 +1,17 @@
+12-9420709-9420713      chr12-9420710-G-C       chr12-9420711-G-C       1       0.39992018950740127
+12-9420709-9420713      chr12-9420710-G-C       chr12-9420712-A-C       1       0.15993615797563573
+12-9420709-9420713      chr12-9420710-G-C       chr12-9420713-G-C       1       0.06396169860670191
+12-9420709-9420713      chr12-9420711-G-C       chr12-9420712-A-C       1       0.15993615797563573
+12-9420709-9420713      chr12-9420711-G-C       chr12-9420713-G-C       1       0.06396169860670191
+12-9420709-9420713      chr12-9420712-A-C       chr12-9420713-G-C       1       0.15993615797563573
+Denovo count: 0
+Cis count: 3
+Avg dist between cis: 1.0
+Trans count: 0
+Avg dist between trans: NaN
+Newblock count: 0
+Contradiction count: 0
+Innocuous count: 0
+RNAseq jump count: 0
+Physical Phasing Count: 0
+00:00:00:725

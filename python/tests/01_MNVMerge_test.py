@@ -40,13 +40,16 @@ from casmsmartphase.MNVMerge import MNVMerge
 from casmsmartphase.MNVMerge import parse_sphase_output
 
 INPUT_VCF = "test_data/test_input.vcf.gz"
+TRINUC_INPUT_VCF = "test_data/test_input_trinuc.vcf.gz"
 FILT_QUAL_INPUT_VCF = "test_data/test_input_filt_qual.vcf.gz"
 OUTPUT_VCF = "test_data/test_output.vcf"
 FILT_QUAL_EXP_RES_VCF = "test_data/test_filt_qual_exp_result.vcf"
 EXP_RES_VCF = "test_data/test_exp_result.vcf"
+TRINUC_EXP_RES_VCF = "test_data/test_exp_result_trinuc.vcf"
 RUN_SCRIPT = "pytest_MNVMerge"
 ARG_STR = "x=test_Arg_str"
 SPOUT = "test_data/sample.phased.output"
+SPOUT_TRINUC = "test_data/sample.phased.trinuc.output"
 BAD_SPOUT = "test_data/bad_sample.phased.output"
 SPOUT_EXCEPT = "test_data/sample.phased.except.output"
 CUTOFF = 0.0
@@ -130,9 +133,10 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
 @pytest.mark.parametrize(
     "sphaseout,cutoff,exclude_flags,exp_result",
     [
-        (SPOUT, 0.0, 2, {"chr1": {1627262: 1627263}}),
-        (SPOUT, 0.1, 1, {}),
-        (SPOUT_EXCEPT, 0.0, 2, {"chr1": {1627262: 1627263}}),
+        (SPOUT, 0.0, 2, ({"chr1": {1627262: 1627263}}, 2)),
+        (SPOUT, 0.1, 1, ({}, 1)),
+        (SPOUT_EXCEPT, 0.0, 2, ({"chr1": {1627262: 1627263}}, 2)),
+        (SPOUT_TRINUC, 0.0, 2, ({"chr12": {9420710: 9420713}}, 4)),
     ],
 )
 def test_parse_sphase_output(sphaseout, cutoff, exclude_flags, exp_result):
@@ -195,14 +199,15 @@ def test_generate_new_increment_header(existing_line, n, exp_line):
 
 
 @pytest.mark.parametrize(
-    "invcf,exp_res",
+    "invcf,exp_res,spout",
     [
-        (INPUT_VCF, EXP_RES_VCF),
-        (FILT_QUAL_INPUT_VCF, FILT_QUAL_EXP_RES_VCF),
+        (INPUT_VCF, EXP_RES_VCF, SPOUT),
+        (FILT_QUAL_INPUT_VCF, FILT_QUAL_EXP_RES_VCF, SPOUT),
+        (TRINUC_INPUT_VCF, TRINUC_EXP_RES_VCF, SPOUT_TRINUC),
     ],
 )
-def test_perform_mnv_merge(invcf, exp_res):
-    merge_obj = MNVMerge(invcf, OUTPUT_VCF, SPOUT, CUTOFF, EXCLUDE, RUN_SCRIPT, ARG_STR)
+def test_perform_mnv_merge(invcf, exp_res, spout):
+    merge_obj = MNVMerge(invcf, OUTPUT_VCF, spout, CUTOFF, EXCLUDE, RUN_SCRIPT, ARG_STR)
     merge_obj.perform_mnv_merge_to_vcf()
     assert compare_vcf_files(OUTPUT_VCF, exp_res)
     os.remove(OUTPUT_VCF)
