@@ -39,12 +39,33 @@ import re
 from typing import Dict
 from typing import List
 from typing import Optional
+from typing import Tuple
+
+LOGGER = logging.getLogger(__name__)
 
 import vcfpy
 
 # Setup base variables for the VCF process line
 BASE_VCF_PROCESS_KEY = "vcfProcessLog"
 BASE_VCF_PROCESS_LOG = "<InputVCF=<{}>,InputVCFSource=<{}>,InputVCFParam=<{}>>"
+
+
+def parse_homs_bed_to_dict(bed_file: str) -> Dict:
+    bed_entries_by_contig = dict()
+    with open(bed_file, "r") as read_bed:
+        line = read_bed.readline()
+        while line:
+            line = line.rstrip()
+            split_line = line.split("\t")
+            print(split_line)
+            hom = False if len(split_line) == 3 else True
+            if hom:
+                bed_entry = (int(split_line[1]) + 1, int(split_line[2]), hom)
+                if split_line[0] not in bed_entries_by_contig:
+                    bed_entries_by_contig[split_line[0]] = []
+                bed_entries_by_contig[split_line[0]].append(bed_entry)
+            line = read_bed.readline()
+    return bed_entries_by_contig
 
 
 def get_last_vcf_process_index(
@@ -76,24 +97,78 @@ def get_last_vcf_process_index(
     return max_index
 
 
-def parse_sphase_output(sphaseout: str, cutoff: float, exclude_flags: int) -> Dict:
+def parse_sphase_output(
+    sphaseout: str, cutoff: float, exclude_flags: int, hom_bed_parsed: Dict
+) -> Tuple[Dict, int]:
     mnvs = {}
+    max_len = 1
     with open(sphaseout, "r") as readspout:
         while True:
             line = readspout.readline()
             if not line or line.startswith("Denovo count"):
                 break
             line = line.rstrip()
-            (mnv, start, end, flag, score) = re.split(r"\s+", line, 5)
-            if float(score) < cutoff or int(flag) & exclude_flags:
-                continue
-            (contig, startpos, _tmp) = start.split("-", maxsplit=2)
-            (contig, endpos, _tmp) = end.split("-", maxsplit=2)
-            if not contig in mnvs:
-                mnvs[contig] = {}
-            mnvs[contig][int(startpos)] = int(endpos)
+            try:
+                (mnv_id, pair1, pair2, flag, confidence) = re.split(r"\s+", line, 5)
+                (_id_contig, id_start, _id_stop) = mnv_id.split("-")
+                id_start = int(id_start) + 1
+                if float(confidence) < cutoff or int(flag) & exclude_flags:
+                    continue
+                (contig, startpos, _tmp) = pair1.split("-", maxsplit=2)
+                (contig, endpos, _tmp) = pair2.split("-", maxsplit=2)
+                if int(startpos) + 1 != int(endpos):
+                    # Skip as non-adjacent pair test
+                    continue
+                if not contig in mnvs:
+                    mnvs[contig] = {}
+                # Check if startpos in mnv_id is already stored and see if these are adjacent to an already recorded MNV
+                if id_start in mnvs[contig]:
+                    # Check if current end_pos is adjacent, if so, extend this MNV
+                    if mnvs[contig][id_start] == int(endpos) - 1:
+                        mnvs[contig][id_start] = int(endpos)
+                        mnv_len = (int(endpos) - id_start) + 1
+                        if max_len < mnv_len:
+                            max_len = mnv_len
+                    else:
+                        # Otherwise this is a new MNV
+                        mnvs[contig][int(startpos)] = int(endpos)
+                        mnv_len = (int(endpos) - int(startpos)) + 1
+                        if max_len < mnv_len:
+                            max_len = mnv_len
+                else:
+                    mnvs[contig][int(startpos)] = int(endpos)
+                    mnv_len = (int(endpos) - int(startpos)) + 1
+                    if max_len < mnv_len:
+                        max_len = mnv_len
 
-    return mnvs
+            # Possibly a non phased entry, check for length 2 when split before erroring
+            except ValueError as err:  # Possibly a non phased entry, check for length 2 when split before erroring
+                if len(re.split(r"\s+", line)) != 2:
+                    raise ValueError(
+                        f"Error encountered parsing smart-phase output at line {line}.\nOriginal error {err}"
+                    )
+                LOGGER.info(
+                    f"Skipping line of only 2 items, not a phased variant {line}"
+                )
+                continue
+    print(mnvs)
+    # Add the mnv's that are hom to the MNV list
+    if hom_bed_parsed:
+        for contig in hom_bed_parsed.keys():
+            if contig not in mnvs:
+                mnvs[contig] = {}
+            for store in hom_bed_parsed[contig]:
+                # (start, stop, hom)
+                (start, stop, _hom) = store
+                mnvs[contig][start] = stop
+                mnv_len = (stop - start) + 1
+                if max_len < mnv_len:
+                    max_len = mnv_len
+            mnvs[contig] = {
+                k: mnvs[contig][k] for k in sorted(mnvs[contig])
+            }  # Sort by position
+        mnvs = {k: mnvs[k] for k in sorted(mnvs)}  # Sort by contig
+    return mnvs, max_len
 
 
 class MNVMerge:
@@ -110,6 +185,7 @@ class MNVMerge:
         exclude: int,
         run_script: str,
         arg_str: str,
+        bed=None,
     ):
         self.vcfinname = os.path.basename(vcfIn)
         self.vcfin = vcfpy.Reader.from_path(vcfIn)
@@ -120,6 +196,7 @@ class MNVMerge:
         self.exclude_flags = exclude
         self.arg_str = arg_str
         self.longest_MNV = 2
+        self.bed = bed
 
     def get_process_header_line(
         self, existing_head: vcfpy.Header
@@ -165,7 +242,7 @@ class MNVMerge:
         return new_line
 
     def parse_header_add_merge_and_process(
-        self, writer_header: vcfpy.Header
+        self, writer_header: vcfpy.Header, max_len: int
     ) -> vcfpy.Header:
         """
         Parse VCF header from input. Add a process line and MNV
@@ -179,10 +256,10 @@ class MNVMerge:
         # Add a X1..X2..Xn info and format header lines for
         lines_to_add = []
         for inf_line in info_lines:
-            for i in range(1, self.longest_MNV + 1):
+            for i in range(1, max_len + 1):
                 lines_to_add.append(self.generate_new_increment_header(inf_line, i))
         for form_line in format_lines:
-            for i in range(1, self.longest_MNV + 1):
+            for i in range(1, max_len + 1):
                 lines_to_add.append(self.generate_new_increment_header(form_line, i))
 
         for new_head_line in lines_to_add:
@@ -200,7 +277,7 @@ class MNVMerge:
         filter = []
         if snv_list[0].QUAL:
             do_qual = 1
-            logging.warning("Found a QUAL value, output will be a mean of all QUAL.")
+            LOGGER.warning("Found a QUAL value, output will be a mean of all QUAL.")
         else:
             qual = snv_list[0].QUAL
 
@@ -209,7 +286,7 @@ class MNVMerge:
         for snv in snv_list:
             if snv.FILTER:
                 do_filter = 1
-                logging.warning(
+                LOGGER.warning(
                     "Found a FILTER value, output will be all FILTERs encountered at all bases."
                 )
                 break
@@ -279,8 +356,6 @@ class MNVMerge:
         mnv = vcfpy.Record(
             chrom, pos, id, ref, alt, qual, filter, info, format, calls_dict.values()
         )
-        if len(snv_list) > self.longest_MNV:
-            self.longest_MNV = len(snv_list)
         return mnv
 
     def perform_mnv_merge_to_vcf(self):
@@ -288,11 +363,17 @@ class MNVMerge:
         Iterate through VCF records. Outputting a new VCF with
         requested filters removed.
         """
-        mnvs = parse_sphase_output(self.spout, self.cutoff, self.exclude_flags)
+        hom_bed_parsed = None
+        if self.bed:
+            hom_bed_parsed = parse_homs_bed_to_dict(self.bed)
+
+        (mnvs, max_len) = parse_sphase_output(
+            self.spout, self.cutoff, self.exclude_flags, hom_bed_parsed
+        )
         reader = self.vcfin
         # Make a copy of the header
         writer_header = reader.header.copy()
-        writer_header = self.parse_header_add_merge_and_process(writer_header)
+        writer_header = self.parse_header_add_merge_and_process(writer_header, max_len)
         writer = vcfpy.Writer.from_path(self.vcfout, writer_header)
 
         snvs = []
