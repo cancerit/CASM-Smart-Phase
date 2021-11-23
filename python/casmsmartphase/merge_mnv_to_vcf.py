@@ -37,7 +37,7 @@ import os
 from casmsmartphase.MNVMerge import MNVMerge
 
 
-def run(vcfin, output, smart_phased_output, cutoff, exclude, arg_str):
+def run(vcfin, output, smart_phased_output, cutoff, exclude, arg_str, bed=None):
     # Generate a merged VCF with possible MNVs
     # Open vcf reading module
     mnvmerge = MNVMerge(
@@ -48,5 +48,6 @@ def run(vcfin, output, smart_phased_output, cutoff, exclude, arg_str):
         exclude,
         os.path.basename(__file__),
         arg_str,
+        bed=None,
     )
     mnvmerge.perform_mnv_merge_to_vcf()

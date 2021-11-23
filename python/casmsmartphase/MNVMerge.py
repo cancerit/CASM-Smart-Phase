@@ -50,6 +50,24 @@ BASE_VCF_PROCESS_KEY = "vcfProcessLog"
 BASE_VCF_PROCESS_LOG = "<InputVCF=<{}>,InputVCFSource=<{}>,InputVCFParam=<{}>>"
 
 
+def parse_homs_bed_to_dict(bed_file: str) -> Dict:
+    bed_entries_by_contig = dict()
+    with open(bed_file, "r") as read_bed:
+        line = read_bed.readline()
+        while line:
+            line = line.rstrip()
+            split_line = line.split("\t")
+            print(split_line)
+            hom = False if len(split_line) == 3 else True
+            if hom:
+                bed_entry = (int(split_line[1]) + 1, int(split_line[2]), hom)
+                if split_line[0] not in bed_entries_by_contig:
+                    bed_entries_by_contig[split_line[0]] = []
+                bed_entries_by_contig[split_line[0]].append(bed_entry)
+            line = read_bed.readline()
+    return bed_entries_by_contig
+
+
 def get_last_vcf_process_index(
     header_lines: List[vcfpy.header.HeaderLine], key_prefix: str
 ) -> Optional[int]:
@@ -80,7 +98,7 @@ def get_last_vcf_process_index(
 
 
 def parse_sphase_output(
-    sphaseout: str, cutoff: float, exclude_flags: int
+    sphaseout: str, cutoff: float, exclude_flags: int, hom_bed_parsed: Dict
 ) -> Tuple[Dict, int]:
     mnvs = {}
     max_len = 1
@@ -133,6 +151,23 @@ def parse_sphase_output(
                     f"Skipping line of only 2 items, not a phased variant {line}"
                 )
                 continue
+    print(mnvs)
+    # Add the mnv's that are hom to the MNV list
+    if hom_bed_parsed:
+        for contig in hom_bed_parsed.keys():
+            if contig not in mnvs:
+                mnvs[contig] = {}
+            for store in hom_bed_parsed[contig]:
+                # (start, stop, hom)
+                (start, stop, _hom) = store
+                mnvs[contig][start] = stop
+                mnv_len = (stop - start) + 1
+                if max_len < mnv_len:
+                    max_len = mnv_len
+            mnvs[contig] = {
+                k: mnvs[contig][k] for k in sorted(mnvs[contig])
+            }  # Sort by position
+        mnvs = {k: mnvs[k] for k in sorted(mnvs)}  # Sort by contig
     return mnvs, max_len
 
 
@@ -150,6 +185,7 @@ class MNVMerge:
         exclude: int,
         run_script: str,
         arg_str: str,
+        bed=None,
     ):
         self.vcfinname = os.path.basename(vcfIn)
         self.vcfin = vcfpy.Reader.from_path(vcfIn)
@@ -160,6 +196,7 @@ class MNVMerge:
         self.exclude_flags = exclude
         self.arg_str = arg_str
         self.longest_MNV = 2
+        self.bed = bed
 
     def get_process_header_line(
         self, existing_head: vcfpy.Header
@@ -326,8 +363,12 @@ class MNVMerge:
         Iterate through VCF records. Outputting a new VCF with
         requested filters removed.
         """
+        hom_bed_parsed = None
+        if self.bed:
+            hom_bed_parsed = parse_homs_bed_to_dict(self.bed)
+
         (mnvs, max_len) = parse_sphase_output(
-            self.spout, self.cutoff, self.exclude_flags
+            self.spout, self.cutoff, self.exclude_flags, hom_bed_parsed
         )
         reader = self.vcfin
         # Make a copy of the header
