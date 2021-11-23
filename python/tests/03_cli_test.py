@@ -60,6 +60,8 @@ Options:
   --version                Show the version and exit.
   -f, --vcfin FILE         Path to input VCF file  [required]
   -o, --output output.bed  Path to write output bed file
+  --markhz / --nomarkhz    Mark homozygous adjacent SNVs in the bed file output
+                           (default - don't mark)
   --help                   Show this message and exit.
 """
 
@@ -77,6 +79,10 @@ Options:
   -c, --cutoff FLOAT              Exclude any MNVs with a phased score < cutoff
   -x, --exclude INTEGER           Exclude phased MNV if it matches any of the
                                   exclude flag bits
+  -b, --bed FILE                  .bed file of regions used to run smartphase.
+                                  If homozygous adjacent SNVs are marked in the
+                                  file they will be output in the merged VCF as
+                                  an MNV.
   --help                          Show this message and exit.
 """
 

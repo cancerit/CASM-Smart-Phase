@@ -37,6 +37,7 @@ import pytest
 import vcfpy
 from casmsmartphase.MNVMerge import get_last_vcf_process_index
 from casmsmartphase.MNVMerge import MNVMerge
+from casmsmartphase.MNVMerge import parse_homs_bed_to_dict
 from casmsmartphase.MNVMerge import parse_sphase_output
 
 INPUT_VCF = "test_data/test_input.vcf.gz"
@@ -52,6 +53,8 @@ SPOUT = "test_data/sample.phased.output"
 SPOUT_TRINUC = "test_data/sample.phased.trinuc.output"
 BAD_SPOUT = "test_data/bad_sample.phased.output"
 SPOUT_EXCEPT = "test_data/sample.phased.except.output"
+BED_INPUT_HOM = "test_data/expected_output_hethom.bed"
+BED_INPUT_NOHOM = "test_data/expected_output.bed"
 CUTOFF = 0.0
 EXCLUDE = 2
 
@@ -104,6 +107,24 @@ def compare_vcf_files(vcf_a, vcf_b):
 
 
 @pytest.mark.parametrize(
+    "bed_file, exp_result",
+    [
+        (BED_INPUT_NOHOM, {}),
+        (
+            BED_INPUT_HOM,
+            {
+                "chr1": [
+                    (1866692, 1866693, True),
+                ]
+            },
+        ),
+    ],
+)
+def test_parse_homs_bed_to_dict(bed_file, exp_result):
+    assert parse_homs_bed_to_dict(bed_file) == exp_result
+
+
+@pytest.mark.parametrize(
     "in_head,key_prefix,exp_idx",
     [
         ([vcfpy.HeaderLine("vcfProcessLog", "BLAH")], "vcfProcessLog", None),
@@ -131,20 +152,34 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
 
 
 @pytest.mark.parametrize(
-    "sphaseout,cutoff,exclude_flags,exp_result",
+    "sphaseout,cutoff,exclude_flags,hom_dict,exp_result",
     [
-        (SPOUT, 0.0, 2, ({"chr1": {1627262: 1627263}}, 2)),
-        (SPOUT, 0.1, 1, ({}, 1)),
-        (SPOUT_EXCEPT, 0.0, 2, ({"chr1": {1627262: 1627263}}, 2)),
-        (SPOUT_TRINUC, 0.0, 2, ({"chr12": {9420710: 9420713}}, 4)),
+        (SPOUT, 0.0, 2, {}, ({"chr1": {1627262: 1627263}}, 2)),
+        (SPOUT, 0.1, 1, {}, ({}, 1)),
+        (SPOUT_EXCEPT, 0.0, 2, {}, ({"chr1": {1627262: 1627263}}, 2)),
+        (SPOUT_TRINUC, 0.0, 2, {}, ({"chr12": {9420710: 9420713}}, 4)),
+        (
+            SPOUT_TRINUC,
+            0.0,
+            2,
+            {"chr1": [(1627262, 1627263, "hom")]},
+            ({"chr1": {1627262: 1627263}, "chr12": {9420710: 9420713}}, 4),
+        ),
+        (
+            SPOUT_TRINUC,
+            0.0,
+            2,
+            {"chr1": [(1627262, 1627269, "hom")]},
+            ({"chr1": {1627262: 1627269}, "chr12": {9420710: 9420713}}, 8),
+        ),
     ],
 )
-def test_parse_sphase_output(sphaseout, cutoff, exclude_flags, exp_result):
-    assert parse_sphase_output(sphaseout, cutoff, exclude_flags) == exp_result
+def test_parse_sphase_output(sphaseout, cutoff, exclude_flags, hom_dict, exp_result):
+    assert parse_sphase_output(sphaseout, cutoff, exclude_flags, hom_dict) == exp_result
 
 
 def test_parse_sphase_output_err():
-    parse_sphase_output(BAD_SPOUT, CUTOFF, EXCLUDE)
+    parse_sphase_output(BAD_SPOUT, CUTOFF, EXCLUDE, {})
 
 
 @pytest.mark.parametrize(
