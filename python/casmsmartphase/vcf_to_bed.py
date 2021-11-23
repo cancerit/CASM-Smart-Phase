@@ -36,7 +36,54 @@ processed by Smart-phase
 import vcfpy
 
 
-def run(vcfin, output):
+def parse_vcf(reader, outfile, markhz=False):
+    prev_contig = ""
+    prev_snv = []
+    all_is_het = -1  # -1 unset, 0 hom, 1 het
+    prev_pos = 0
+    for variant in reader:
+
+        # If this variant is not adjacent to the previous
+        if len(prev_snv) > 0 and (
+            variant.CHROM != prev_contig or int(variant.POS) > prev_pos + 1
+        ):
+            # Print any already adjacent SNVs as MNVs
+            if len(prev_snv) > 1:
+                # MNVs print possible MNV location to bed file
+                bed_str = (
+                    f"{prev_snv[0].CHROM}\t{prev_snv[0].POS-1}\t{prev_snv[-1].POS}"
+                )
+                if all_is_het == 0:
+                    bed_str + f"\thom"
+                print(
+                    bed_str,
+                    file=outfile,
+                )
+            prev_snv.clear()
+            all_is_het = -1
+
+        prev_snv.append(variant)
+        calculated_prev_het = 0
+        if (variant.call_for_sample["TUMOUR"]).is_het or all_is_het == 1:
+            calculated_prev_het = 1
+        all_is_het = calculated_prev_het
+        prev_contig = str(variant.CHROM)
+        prev_pos = int(variant.POS)
+
+    # Print any already adjacent SNVs as MNVs
+    if len(prev_snv) > 1:
+        # MNVs pront possible MNV location to bed file
+        bed_str = f"{prev_snv[0].CHROM}\t{prev_snv[0].POS-1}\t{prev_snv[-1].POS}"
+        if all_is_het == 0:
+            bed_str + f"\thom"
+        print(
+            bed_str,
+            file=outfile,
+        )
+    prev_snv.clear()
+
+
+def run(vcfin, output, markhz):
     # Run through input VCF file and output any bed locations
     """
     Iterate through VCF records. Outputting a new VCF with
@@ -44,33 +91,4 @@ def run(vcfin, output):
     """
     reader = vcfpy.Reader.from_path(vcfin)
     with open(output, "w") as outfile:
-        prev_contig = ""
-        prev_snv = []
-        prev_pos = 0
-        for variant in reader:
-            # If this variant is not adjacent to the previous
-            if len(prev_snv) > 0 and (
-                variant.CHROM != prev_contig or int(variant.POS) > prev_pos + 1
-            ):
-                # Print any already adjacent SNVs as MNVs
-                if len(prev_snv) > 1:
-                    # MNVs pront possible MNV location to bed file
-                    print(
-                        f"{prev_snv[0].CHROM}\t{prev_snv[0].POS-1}\t{prev_snv[-1].POS}",
-                        file=outfile,
-                        end="\n",
-                    )
-                prev_snv.clear()
-
-            prev_snv.append(variant)
-            prev_contig = str(variant.CHROM)
-            prev_pos = int(variant.POS)
-
-        # Print any already adjacent SNVs as MNVs
-        if len(prev_snv) > 1:
-            # MNVs pront possible MNV location to bed file
-            print(
-                f"{prev_snv[0].CHROM}\t{prev_snv[0].POS-1}\t{prev_snv[-1].POS}\n",
-                file=outfile,
-            )
-        prev_snv.clear()
+        parse_vcf(reader, outfile, markhz)

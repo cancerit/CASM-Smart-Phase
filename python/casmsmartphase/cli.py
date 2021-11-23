@@ -40,8 +40,13 @@ HELP_VCF_IN = "Path to input VCF file"
 HELP_EXCLUDE = "Exclude phased MNV if it matches any of the exclude flag bits"
 HELP_CUTOFF = "Exclude any MNVs with a phased score < cutoff"
 HELP_OUTPUT_BED = "Path to write output bed file"
+HELP_OUTPUT_HZ_BED = (
+    "Mark homozygous adjacent SNVs in the bed file output (default - don't mark)"
+)
 HELP_OUTPUT_VCF = "Path to write output vcf file"
 HELP_SPHASE_OUT = "The phased output file from Smart-Phase"
+HELP_BED_REGIONS = """.bed file of regions used to run smartphase.
+                    If homozygous adjacent SNVs are marked in the file they will be output in the merged VCF as an MNV."""
 FILEPATH_INPUTS = ["vcfin", "output", "smart_phased_output"]
 
 
@@ -100,6 +105,7 @@ def cli():
     help=HELP_OUTPUT_BED,
     required=False,
 )
+@click.option("--markhz/--nomarkhz", help=HELP_OUTPUT_HZ_BED, default=False)
 def generate_bed(*args, **kwargs):
     """
     Generate a bed file of adjacent SNVs in a VCF for smartphase analysis
@@ -139,6 +145,14 @@ def generate_bed(*args, **kwargs):
     type=int,
     help=HELP_EXCLUDE,
     required=False,
+)
+@click.option(
+    "-b",
+    "--bed",
+    required=False,
+    default=None,
+    type=_file_exists(),
+    help=HELP_BED_REGIONS,
 )
 def merge_mnvs(*args, **kwargs):
     """

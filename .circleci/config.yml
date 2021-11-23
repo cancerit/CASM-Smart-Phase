@@ -20,6 +20,7 @@ jobs:
           name: Execute skywalking-eyes check of licenses
           command: |
             docker run --rm -v $(pwd):/github/workspace apache/skywalking-eyes header check
+
   build:
     environment:
       IMAGE_NAME: quay.io/wtsicgp/casm-smart-phase

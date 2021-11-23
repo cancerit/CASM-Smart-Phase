@@ -40,8 +40,11 @@ Usage: casmsmartphase generate-bed [OPTIONS]
   Generate a bed file of adjacent SNVs in a VCF for smartphase analysis
 
 Options:
+  --version                Show the version and exit.
   -f, --vcfin FILE         Path to input VCF file  [required]
   -o, --output output.bed  Path to write output bed file
+  --markhz / --nomarkhz    Mark homozygous adjacent SNVs in the bed file
+                           output (default - don't mark)
   --help                   Show this message and exit.
 ```
 

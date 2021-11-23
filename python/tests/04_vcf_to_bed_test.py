@@ -39,6 +39,8 @@ from casmsmartphase.vcf_to_bed import run
 TEST_INPUT = "test_data/test_input.vcf.gz"
 EXP_OUTPUT = "test_data/expected_output.bed"
 TEST_OUTPUT = "test_data/test_output.bed"
+TEST_INPUT_HOM = "test_data/test_input_hethom.vcf.gz"
+EXP_OUTPUT_HOM = "test_data/expected_output_hethom.bed"
 
 
 def compare_files(file_a, file_b):
@@ -55,7 +57,24 @@ def compare_files(file_a, file_b):
     return True
 
 
-def test_vcf_to_bed_run():
-    run(TEST_INPUT, TEST_OUTPUT)
-    compare_files(EXP_OUTPUT, TEST_OUTPUT)
-    os.remove(TEST_OUTPUT)
+@pytest.mark.parametrize(
+    "input,output,markhom,exp_out",
+    [
+        (
+            TEST_INPUT,
+            TEST_OUTPUT,
+            False,
+            EXP_OUTPUT,
+        ),
+        (
+            TEST_INPUT_HOM,
+            TEST_OUTPUT,
+            True,
+            EXP_OUTPUT_HOM,
+        ),
+    ],
+)
+def test_vcf_to_bed_run(input, output, markhom, exp_out):
+    run(input, output, markhom)
+    compare_files(exp_out, output)
+    os.remove(output)
