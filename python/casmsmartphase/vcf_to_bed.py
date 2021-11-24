@@ -37,6 +37,7 @@ import vcfpy
 
 
 def parse_vcf(reader, outfile, markhz=False):
+    print(f"markhz {markhz}")
     prev_contig = ""
     prev_snv = []
     all_is_het = -1  # -1 unset, 0 hom, 1 het
@@ -53,8 +54,8 @@ def parse_vcf(reader, outfile, markhz=False):
                 bed_str = (
                     f"{prev_snv[0].CHROM}\t{prev_snv[0].POS-1}\t{prev_snv[-1].POS}"
                 )
-                if all_is_het == 0:
-                    bed_str + f"\thom"
+                if all_is_het == 0 and markhz:
+                    bed_str = bed_str + f"\thom"
                 print(
                     bed_str,
                     file=outfile,
@@ -74,8 +75,8 @@ def parse_vcf(reader, outfile, markhz=False):
     if len(prev_snv) > 1:
         # MNVs pront possible MNV location to bed file
         bed_str = f"{prev_snv[0].CHROM}\t{prev_snv[0].POS-1}\t{prev_snv[-1].POS}"
-        if all_is_het == 0:
-            bed_str + f"\thom"
+        if all_is_het == 0 and markhz:
+            bed_str = bed_str + f"\thom"
         print(
             bed_str,
             file=outfile,
