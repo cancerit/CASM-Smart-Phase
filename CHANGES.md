@@ -1,5 +1,9 @@
 # CASM-Smart-Phase
 
+## 0.1.2
+
+- Fix bug in generate-bed output
+
 ## 0.1.1
 
 - Add option to mark homozygous in the bed generation step.
