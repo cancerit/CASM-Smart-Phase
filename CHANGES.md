@@ -3,6 +3,7 @@
 ## 0.1.3
 
 - generate-bed now uses column 5 (score) rather than 'name' to avoid clashes with smart-phase workings.
+- smart-phase version updated to v1.2.1
 
 ## 0.1.2
 
