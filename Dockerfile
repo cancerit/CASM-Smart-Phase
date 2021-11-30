@@ -4,6 +4,7 @@ FROM ubuntu:20.04 as builder
 ENV LC_ALL C
 ENV LC_ALL C.UTF-8
 ENV LANG C.UTF-8
+ENV SPHASE_VER 1.2.1
 
 # ensure any pipes fail correctly, may impact other things
 SHELL ["/bin/bash", "-o", "pipefail", "-c"]
@@ -45,8 +46,8 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 
 #Install smart-phase
-RUN curl -sSL --retry 10 https://github.com/paulhager/smart-phase/archive/refs/tags/v1.2.0.tar.gz | tar -zx
-WORKDIR /tmp/build/smart-phase-1.2.0/
+RUN curl -sSL --retry 10 https://github.com/paulhager/smart-phase/archive/refs/tags/v${SPHASE_VER}.tar.gz | tar -zx
+WORKDIR /tmp/build/smart-phase-${SPHASE_VER}/
 RUN bash compile.sh \
     && cp smartPhase.jar $OPT/
 
