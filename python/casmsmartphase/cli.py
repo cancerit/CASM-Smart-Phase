@@ -36,9 +36,12 @@ import pkg_resources  # part of setuptools
 from casmsmartphase import merge_mnv_to_vcf
 from casmsmartphase import vcf_to_bed
 
+CUTOFF_DEFAULT = 0.0
 HELP_VCF_IN = "Path to input VCF file"
 HELP_EXCLUDE = "Exclude phased MNV if it matches any of the exclude flag bits"
-HELP_CUTOFF = "Exclude any MNVs with a phased score < cutoff"
+HELP_CUTOFF = (
+    f"Exclude any MNVs with a phased score < cutoff [default: {CUTOFF_DEFAULT}]"
+)
 HELP_OUTPUT_BED = "Path to write output bed file"
 HELP_OUTPUT_HZ_BED = (
     "Mark homozygous adjacent SNVs in the bed file output (default - don't mark)"
@@ -133,7 +136,7 @@ def generate_bed(*args, **kwargs):
 @click.option(
     "-c",
     "--cutoff",
-    default=0.0,
+    default=CUTOFF_DEFAULT,
     type=float,
     help=HELP_CUTOFF,
     required=False,
