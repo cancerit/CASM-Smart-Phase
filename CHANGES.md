@@ -1,5 +1,9 @@
 # CASM-Smart-Phase
 
+## 0.1.4
+
+- Fix issue in MNV merging
+
 ## 0.1.3
 
 - generate-bed now uses column 5 (score) rather than 'name' to avoid clashes with smart-phase workings.
