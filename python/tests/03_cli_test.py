@@ -77,6 +77,7 @@ Options:
                                   The phased output file from Smart-Phase
                                   [required]
   -c, --cutoff FLOAT              Exclude any MNVs with a phased score < cutoff
+                                  [default: 0.0]
   -x, --exclude INTEGER           Exclude phased MNV if it matches any of the
                                   exclude flag bits
   -b, --bed FILE                  .bed file of regions used to run smartphase.

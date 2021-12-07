@@ -110,34 +110,37 @@ def parse_sphase_output(
             line = line.rstrip()
             try:
                 (mnv_id, pair1, pair2, flag, confidence) = re.split(r"\s+", line, 5)
-                (_id_contig, id_start, _id_stop) = mnv_id.split("-")
-                id_start = int(id_start) + 1
+                (_id_contig, id_start_region, _id_stop) = mnv_id.split("-")
+                print(_id_contig, id_start_region, _id_stop)
                 if float(confidence) < cutoff or int(flag) & exclude_flags:
                     continue
                 (contig, startpos, _tmp) = pair1.split("-", maxsplit=2)
                 (contig, endpos, _tmp) = pair2.split("-", maxsplit=2)
-                if int(startpos) + 1 != int(endpos):
+                startpos = int(startpos)
+                endpos = int(endpos)
+                if startpos + 1 != endpos:
                     # Skip as non-adjacent pair test
                     continue
                 if not contig in mnvs:
                     mnvs[contig] = {}
-                # Check if startpos in mnv_id is already stored and see if these are adjacent to an already recorded MNV
-                if id_start in mnvs[contig]:
+                # Check for adjacent MNV
+                if startpos in mnvs[contig].values():
+                    # Check if startpos in mnv_id is already stored and see if these are adjacent to an already recorded MNV
+                    # Find key for mnv that adjoins this one
+                    key = None
+                    for k, v in mnvs[contig].items():
+                        if v == startpos:
+                            key = k
+                            break
                     # Check if current end_pos is adjacent, if so, extend this MNV
-                    if mnvs[contig][id_start] == int(endpos) - 1:
-                        mnvs[contig][id_start] = int(endpos)
-                        mnv_len = (int(endpos) - id_start) + 1
-                        if max_len < mnv_len:
-                            max_len = mnv_len
-                    else:
-                        # Otherwise this is a new MNV
-                        mnvs[contig][int(startpos)] = int(endpos)
-                        mnv_len = (int(endpos) - int(startpos)) + 1
-                        if max_len < mnv_len:
-                            max_len = mnv_len
+                    mnvs[contig][key] = endpos
+                    mnv_len = (endpos - key) + 1
+                    if max_len < mnv_len:
+                        max_len = mnv_len
                 else:
-                    mnvs[contig][int(startpos)] = int(endpos)
-                    mnv_len = (int(endpos) - int(startpos)) + 1
+                    # Otherwise this is a new MNV
+                    mnvs[contig][startpos] = endpos
+                    mnv_len = (endpos - startpos) + 1
                     if max_len < mnv_len:
                         max_len = mnv_len
 
@@ -151,7 +154,6 @@ def parse_sphase_output(
                     f"Skipping line of only 2 items, not a phased variant {line}"
                 )
                 continue
-    print(mnvs)
     # Add the mnv's that are hom to the MNV list
     if hom_bed_parsed:
         for contig in hom_bed_parsed.keys():
@@ -234,6 +236,7 @@ class MNVMerge:
         line with the key and description updates to include said
         incremental int
         """
+        print(f"headerline {n}")
         new_line = existing_line.copy()
         new_line.mapping["ID"] = new_line.mapping["ID"] + f"_{n}"
         new_line.mapping["Description"] = (

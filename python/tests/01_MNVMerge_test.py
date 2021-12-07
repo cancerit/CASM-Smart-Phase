@@ -55,6 +55,7 @@ BAD_SPOUT = "test_data/bad_sample.phased.output"
 SPOUT_EXCEPT = "test_data/sample.phased.except.output"
 BED_INPUT_HOM = "test_data/expected_output_hethom.bed"
 BED_INPUT_NOHOM = "test_data/expected_output.bed"
+SPOUT_TRINUC_2 = "test_data/test_phase_triplet.out"
 CUTOFF = 0.0
 EXCLUDE = 2
 
@@ -171,6 +172,18 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
             2,
             {"chr1": [(1627262, 1627269, "hom")]},
             ({"chr1": {1627262: 1627269}, "chr12": {9420710: 9420713}}, 8),
+        ),
+        (
+            SPOUT_TRINUC_2,
+            0.0,
+            2,
+            {},
+            (
+                {
+                    "chr17": {42760364: 42760366},
+                },
+                3,
+            ),
         ),
     ],
 )
