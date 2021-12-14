@@ -5,3 +5,4 @@ python/htmlcov
 python/.coverage
 **.pytest_cache
 junit.xml
+.vstags
