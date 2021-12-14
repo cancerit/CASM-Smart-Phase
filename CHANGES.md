@@ -1,5 +1,9 @@
 # CASM-Smart-Phase
 
+## 0.1.5
+
+- No longer count non matching zygosity as within an MNV
+
 ## 0.1.4
 
 - Fix issue in MNV merging
