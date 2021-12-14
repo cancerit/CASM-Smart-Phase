@@ -116,7 +116,10 @@ def compare_vcf_files(vcf_a, vcf_b):
             {
                 "chr1": [
                     (1866692, 1866693, True),
-                ]
+                ],
+                "chr3": [
+                    (45636146, 45636147, True),
+                ],
             },
         ),
     ],

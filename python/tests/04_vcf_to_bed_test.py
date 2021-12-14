@@ -32,9 +32,10 @@
 Tests of the vcf_to_bed module
 """
 import os
+import sys
 
 import pytest
-from casmsmartphase.vcf_to_bed import run
+from casmsmartphase import vcf_to_bed
 
 TEST_INPUT = "test_data/test_input.vcf.gz"
 EXP_OUTPUT = "test_data/expected_output.bed"
@@ -49,11 +50,12 @@ def compare_files(file_a, file_b):
     """
     if file_a == file_b:
         return True
+    print(file_a, file_b, file=sys.stderr)
     with open(file_a) as a:
         with open(file_b) as b:
-            linea = a.readline()
-            lineb = b.readline()
-            assert linea == lineb
+            linesa = a.readlines()
+            linesb = b.readlines()
+            assert linesa == linesb
     return True
 
 
@@ -75,6 +77,6 @@ def compare_files(file_a, file_b):
     ],
 )
 def test_vcf_to_bed_run(input, output, markhom, exp_out):
-    run(input, output, markhom)
+    vcf_to_bed.run_parse(input, output, markhom)
     compare_files(exp_out, output)
     os.remove(output)
