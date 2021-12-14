@@ -113,7 +113,7 @@ def generate_bed(*args, **kwargs):
     """
     Generate a bed file of adjacent SNVs in a VCF for smartphase analysis
     """
-    vcf_to_bed.run(*args, **kwargs)
+    vcf_to_bed.run_parse(*args, **kwargs)
 
 
 @cli.command()
