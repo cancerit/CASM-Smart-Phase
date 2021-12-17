@@ -48,6 +48,6 @@ def run(vcfin, output, smart_phased_output, cutoff, exclude, arg_str, bed=None):
         exclude,
         os.path.basename(__file__),
         arg_str,
-        bed=None,
+        bed,
     )
     mnvmerge.perform_mnv_merge_to_vcf()
