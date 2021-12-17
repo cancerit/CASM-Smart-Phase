@@ -1,5 +1,9 @@
 # CASM-Smart-Phase
 
+## 0.1.6
+
+- Correct homozygous marked bed file reading
+
 ## 0.1.5
 
 - No longer count non matching zygosity as within an MNV
