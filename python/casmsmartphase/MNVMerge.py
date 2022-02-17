@@ -36,6 +36,7 @@ import datetime
 import logging
 import os
 import re
+from itertools import groupby
 from typing import Dict
 from typing import List
 from typing import Optional
@@ -95,6 +96,11 @@ def get_last_vcf_process_index(
         ):
             max_index = int(key_part[1])
     return max_index
+
+
+def all_equal(iterable):
+    g = groupby(iterable)
+    return next(g, True) and not next(g, False)
 
 
 def parse_sphase_output(
@@ -355,6 +361,10 @@ class MNVMerge:
         # Make the quality a mean value for MNVs
         if do_qual:
             qual = qual / len(snv_list)
+
+        if "PASS" in filter and all_equal(filter):
+            # Check for entries being passes and mark as a single pass
+            filter = ["PASS"]
 
         mnv = vcfpy.Record(
             chrom, pos, id, ref, alt, qual, filter, info, format, calls_dict.values()
