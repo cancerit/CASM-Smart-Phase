@@ -1,5 +1,9 @@
 # CASM-Smart-Phase
 
+## 0.1.7
+
+- multiple pass only filters now marked as a single PASS in merge output
+
 ## 0.1.6
 
 - Correct homozygous marked bed file reading
