@@ -138,7 +138,9 @@ def parse_sphase_output(
                             key = k
                             break
                     # Check if current end_pos is adjacent, if so, extend this MNV
+                    del (mnvs[contig])[key]
                     mnvs[contig][key] = (endpos, conf_score_list.append(confidence))
+                    print(mnvs)
                     mnv_len = (endpos - key) + 1
                     if max_len < mnv_len:
                         max_len = mnv_len
@@ -168,7 +170,7 @@ def parse_sphase_output(
                 # (start, stop, hom)
                 (start, stop, _hom) = store
                 mnv_len = (stop - start) + 1
-                mnvs[contig][start] = (stop, [1.0] * mnv_len)
+                mnvs[contig][start] = (stop, ["1.0"] * mnv_len)
                 if max_len < mnv_len:
                     max_len = mnv_len
             mnvs[contig] = {
@@ -274,7 +276,7 @@ class MNVMerge:
             writer_header.add_line(new_head_line)
 
         # Add confidence score info headerline
-        ##INFO=<ID=SPCONF,Number=.,Type=String,Description="Smart-Phase confidence scores of the form confidencescore_MNV_base_1,confidencescore_MNV_base_2 etc.">
+        ##INFO=<ID=SPCONF,Number=.,Type=String,Description="Smart-Phase confidence scores of the form score_MNV_base_1to2,score_MNV_base_2to3 etc.">
         writer_header.add_info_line(
             vcfpy.OrderedDict(
                 [
@@ -283,7 +285,7 @@ class MNVMerge:
                     ("Type", "String"),
                     (
                         "Description",
-                        "Smart-Phase confidence scores of the form score_MNV_base_1,score_MNV_base_2 etc.",
+                        "Smart-Phase confidence scores of the form score_MNV_base_1to2,score_MNV_base_2to3 etc.",
                     ),
                 ]
             )
