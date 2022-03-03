@@ -157,24 +157,106 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
 
 @pytest.mark.parametrize(
     "sphaseout,cutoff,exclude_flags,hom_dict,exp_result",
+    # SPOUT = "test_data/sample.phased.output"
+    # SPOUT_TRINUC = "test_data/sample.phased.trinuc.output"
+    # BAD_SPOUT = "test_data/bad_sample.phased.output"
+    # SPOUT_EXCEPT = "test_data/sample.phased.except.output"
+    # BED_INPUT_HOM = "test_data/expected_output_hethom.bed"
+    # BED_INPUT_NOHOM = "test_data/expected_output.bed"
+    # SPOUT_TRINUC_2 = "test_data/test_phase_triplet.out"
     [
-        (SPOUT, 0.0, 2, {}, ({"chr1": {1627262: 1627263}}, 2)),
+        (
+            SPOUT,
+            0.0,
+            2,
+            {},
+            (
+                {"chr1": {1627262: (1627263, ["0.1999724805754193"])}},
+                2,
+            ),
+        ),
         (SPOUT, 0.1, 1, {}, ({}, 1)),
-        (SPOUT_EXCEPT, 0.0, 2, {}, ({"chr1": {1627262: 1627263}}, 2)),
-        (SPOUT_TRINUC, 0.0, 2, {}, ({"chr12": {9420710: 9420713}}, 4)),
+        (
+            SPOUT_EXCEPT,
+            0.0,
+            2,
+            {},
+            ({"chr1": {1627262: (1627263, ["0.1999724805754193"])}}, 2),
+        ),
+        (
+            SPOUT_TRINUC,
+            0.0,
+            2,
+            {},
+            (
+                {
+                    "chr12": {
+                        9420710: (
+                            9420713,
+                            [
+                                "0.39992018950740127",
+                                "0.15993615797563573",
+                                "0.15993615797563573",
+                            ],
+                        )
+                    }
+                },
+                4,
+            ),
+        ),
         (
             SPOUT_TRINUC,
             0.0,
             2,
             {"chr1": [(1627262, 1627263, "hom")]},
-            ({"chr1": {1627262: 1627263}, "chr12": {9420710: 9420713}}, 4),
+            (
+                {
+                    "chr1": {
+                        1627262: (
+                            1627263,
+                            ["1.0"],
+                        )
+                    },
+                    "chr12": {
+                        9420710: (
+                            9420713,
+                            [
+                                "0.39992018950740127",
+                                "0.15993615797563573",
+                                "0.15993615797563573",
+                            ],
+                        )
+                    },
+                },
+                4,
+            ),
         ),
         (
             SPOUT_TRINUC,
             0.0,
             2,
             {"chr1": [(1627262, 1627269, "hom")]},
-            ({"chr1": {1627262: 1627269}, "chr12": {9420710: 9420713}}, 8),
+            (
+                {
+                    "chr1": {
+                        1627262: (
+                            1627269,
+                            ["1.0", "1.0", "1.0", "1.0", "1.0", "1.0", "1.0"],
+                        )
+                    },
+                    "chr12": {
+                        9420710: (
+                            9420713,
+                            [
+                                "0.39992018950740127",
+                                "0.15993615797563573",
+                                "0.15993615797563573",
+                            ],
+                        )
+                    },
+                },
+                8,
+            ),
         ),
         (
             SPOUT_TRINUC_2,
@@ -183,7 +265,12 @@ def test_get_last_vcf_process_index(in_head, key_prefix, exp_idx):
             {},
             (
                 {
-                    "chr17": {42760364: 42760366},
+                    "chr17": {
+                        42760364: (
+                            42760366,
+                            ["0.27489430479697324", "0.06933530763570786"],
+                        )
+                    },
                 },
                 3,
             ),

@@ -58,7 +58,6 @@ def parse_homs_bed_to_dict(bed_file: str) -> Dict:
         while line:
             line = line.rstrip()
             split_line = line.split("\t")
-            print(split_line)
             hom = False if len(split_line) == 3 else True
             if hom:
                 bed_entry = (int(split_line[1]) + 1, int(split_line[2]), hom)
@@ -116,8 +115,6 @@ def parse_sphase_output(
             line = line.rstrip()
             try:
                 (mnv_id, pair1, pair2, flag, confidence) = re.split(r"\s+", line, 5)
-                (_id_contig, id_start_region, _id_stop) = mnv_id.split("-")
-                print(_id_contig, id_start_region, _id_stop)
                 if float(confidence) < cutoff or int(flag) & exclude_flags:
                     continue
                 (contig, startpos, _tmp) = pair1.split("-", maxsplit=2)
@@ -130,22 +127,26 @@ def parse_sphase_output(
                 if not contig in mnvs:
                     mnvs[contig] = {}
                 # Check for adjacent MNV
-                if startpos in mnvs[contig].values():
+                if startpos in [t[0] for t in mnvs[contig].values()]:
                     # Check if startpos in mnv_id is already stored and see if these are adjacent to an already recorded MNV
                     # Find key for mnv that adjoins this one
                     key = None
-                    for k, v in mnvs[contig].items():
-                        if v == startpos:
+                    for k, (end_pos, conf_score_list) in mnvs[contig].items():
+                        if end_pos == startpos:
                             key = k
                             break
                     # Check if current end_pos is adjacent, if so, extend this MNV
-                    mnvs[contig][key] = endpos
+                    (end_pos, conf_score_list) = mnvs[contig].pop(key)
+                    conf_score_list.append(confidence)
+                    mnvs[contig][key] = (endpos, conf_score_list)
                     mnv_len = (endpos - key) + 1
                     if max_len < mnv_len:
                         max_len = mnv_len
                 else:
                     # Otherwise this is a new MNV
-                    mnvs[contig][startpos] = endpos
+                    conf_list = list()
+                    conf_list.append(confidence)
+                    mnvs[contig][startpos] = (endpos, conf_list)
                     mnv_len = (endpos - startpos) + 1
                     if max_len < mnv_len:
                         max_len = mnv_len
@@ -168,8 +169,8 @@ def parse_sphase_output(
             for store in hom_bed_parsed[contig]:
                 # (start, stop, hom)
                 (start, stop, _hom) = store
-                mnvs[contig][start] = stop
                 mnv_len = (stop - start) + 1
+                mnvs[contig][start] = (stop, ["1.0"] * (mnv_len - 1))
                 if max_len < mnv_len:
                     max_len = mnv_len
             mnvs[contig] = {
@@ -242,7 +243,6 @@ class MNVMerge:
         line with the key and description updates to include said
         incremental int
         """
-        print(f"headerline {n}")
         new_line = existing_line.copy()
         new_line.mapping["ID"] = new_line.mapping["ID"] + f"_{n}"
         new_line.mapping["Description"] = (
@@ -274,9 +274,27 @@ class MNVMerge:
         for new_head_line in lines_to_add:
             writer_header.add_line(new_head_line)
 
+        # Add confidence score info headerline
+        ##INFO=<ID=SPCONF,Number=.,Type=String,Description="Smart-Phase confidence scores of the form score_MNV_base_1to2,score_MNV_base_2to3 etc.">
+        writer_header.add_info_line(
+            vcfpy.OrderedDict(
+                [
+                    ("ID", "SPCONF"),
+                    ("Number", "1"),
+                    ("Type", "String"),
+                    (
+                        "Description",
+                        "Smart-Phase confidence scores of the form score_MNV_base_1to2,score_MNV_base_2to3 etc.",
+                    ),
+                ]
+            )
+        )
+
         return writer_header
 
-    def merge_snv_to_mnv(self, snv_list: List[vcfpy.Record]) -> vcfpy.Record:
+    def merge_snv_to_mnv(
+        self, snv_list: List[vcfpy.Record], conf_calls: List[str]
+    ) -> vcfpy.Record:
         """
         Merge snvs from list into a single variant and output to VCF
         """
@@ -305,7 +323,7 @@ class MNVMerge:
         id = []  # list of SNV IDs?
         ref = ""
         alt_str = ""
-        info = {}
+        info = {"SPCONF": str(",".join(conf_calls))}
         format = []
         # Setup new call objects
         calls_dict = {}
@@ -393,24 +411,30 @@ class MNVMerge:
         start_pos_mnv = 0
         start_contig_mnv = ""
         in_mnv = False
+        mnv_end_pos = 0
+        mnv_conf_calls = None
         for variant in reader:
             if variant.CHROM in mnvs:
                 # Start position in an mnv
                 if int(variant.POS) in mnvs[variant.CHROM]:
                     in_mnv = True
+                    (mnv_end_pos, mnv_conf_calls) = mnvs[variant.CHROM][
+                        int(variant.POS)
+                    ]
                     start_pos_mnv = int(variant.POS)
                     start_contig_mnv = variant.CHROM
                     snvs.append(variant)
                 # In an MNV and waiting for finish
-                elif (
-                    in_mnv and int(variant.POS) <= mnvs[start_contig_mnv][start_pos_mnv]
-                ):
+                elif in_mnv and int(variant.POS) <= mnv_end_pos:
                     snvs.append(variant)
-                    if int(variant.POS) == mnvs[start_contig_mnv][start_pos_mnv]:
-                        mnv_rec = self.merge_snv_to_mnv(snvs)
+                    if int(variant.POS) == mnv_end_pos:
+                        mnv_rec = self.merge_snv_to_mnv(snvs, mnv_conf_calls)
                         writer.write_record(mnv_rec)
                         snvs.clear()
                         in_mnv = False
+                        mnv_end_pos = 0
+                        mnv_conf_calls = None
+
                 else:
                     writer.write_record(variant)
             else:
