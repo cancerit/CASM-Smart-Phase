@@ -115,8 +115,6 @@ def parse_sphase_output(
             line = line.rstrip()
             try:
                 (mnv_id, pair1, pair2, flag, confidence) = re.split(r"\s+", line, 5)
-                # (_id_contig, id_start_region, _id_stop) = mnv_id.split("-")
-                # print(_id_contig, id_start_region, _id_stop)
                 if float(confidence) < cutoff or int(flag) & exclude_flags:
                     continue
                 (contig, startpos, _tmp) = pair1.split("-", maxsplit=2)
@@ -129,7 +127,7 @@ def parse_sphase_output(
                 if not contig in mnvs:
                     mnvs[contig] = {}
                 # Check for adjacent MNV
-                if startpos in mnvs[contig].values():
+                if startpos in [t[0] for t in mnvs[contig].values()]:
                     # Check if startpos in mnv_id is already stored and see if these are adjacent to an already recorded MNV
                     # Find key for mnv that adjoins this one
                     key = None
@@ -138,15 +136,17 @@ def parse_sphase_output(
                             key = k
                             break
                     # Check if current end_pos is adjacent, if so, extend this MNV
-                    del (mnvs[contig])[key]
-                    mnvs[contig][key] = (endpos, conf_score_list.append(confidence))
-                    print(mnvs)
+                    (end_pos, conf_score_list) = mnvs[contig].pop(key)
+                    conf_score_list.append(confidence)
+                    mnvs[contig][key] = (endpos, conf_score_list)
                     mnv_len = (endpos - key) + 1
                     if max_len < mnv_len:
                         max_len = mnv_len
                 else:
                     # Otherwise this is a new MNV
-                    mnvs[contig][startpos] = (endpos, [confidence])
+                    conf_list = list()
+                    conf_list.append(confidence)
+                    mnvs[contig][startpos] = (endpos, conf_list)
                     mnv_len = (endpos - startpos) + 1
                     if max_len < mnv_len:
                         max_len = mnv_len
@@ -170,7 +170,7 @@ def parse_sphase_output(
                 # (start, stop, hom)
                 (start, stop, _hom) = store
                 mnv_len = (stop - start) + 1
-                mnvs[contig][start] = (stop, ["1.0"] * mnv_len)
+                mnvs[contig][start] = (stop, ["1.0"] * (mnv_len - 1))
                 if max_len < mnv_len:
                     max_len = mnv_len
             mnvs[contig] = {
@@ -271,7 +271,6 @@ class MNVMerge:
             for i in range(1, max_len + 1):
                 lines_to_add.append(self.generate_new_increment_header(form_line, i))
 
-        lines_to_add.append(vcfpy.InfoHeaderLine("SPCONF"))
         for new_head_line in lines_to_add:
             writer_header.add_line(new_head_line)
 
@@ -281,7 +280,7 @@ class MNVMerge:
             vcfpy.OrderedDict(
                 [
                     ("ID", "SPCONF"),
-                    ("Number", "."),
+                    ("Number", "1"),
                     ("Type", "String"),
                     (
                         "Description",
@@ -294,7 +293,7 @@ class MNVMerge:
         return writer_header
 
     def merge_snv_to_mnv(
-        self, snv_list: List[vcfpy.Record], conf_calls: List
+        self, snv_list: List[vcfpy.Record], conf_calls: List[str]
     ) -> vcfpy.Record:
         """
         Merge snvs from list into a single variant and output to VCF
@@ -324,7 +323,7 @@ class MNVMerge:
         id = []  # list of SNV IDs?
         ref = ""
         alt_str = ""
-        info = {"SPCONF": ",".join(map(str, conf_calls))}
+        info = {"SPCONF": str(",".join(conf_calls))}
         format = []
         # Setup new call objects
         calls_dict = {}
