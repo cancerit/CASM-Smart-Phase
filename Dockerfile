@@ -49,7 +49,7 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 RUN curl -sSL --retry 10 https://github.com/paulhager/smart-phase/archive/refs/tags/v${SPHASE_VER}.tar.gz | tar -zx
 WORKDIR /tmp/build/smart-phase-${SPHASE_VER}/
 RUN bash compile.sh \
-    && cp smartPhase.jar $OPT/
+    && cp compile/smartPhase.jar $OPT/
 
 WORKDIR /tmp/build
 
