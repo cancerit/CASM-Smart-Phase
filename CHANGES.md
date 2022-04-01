@@ -1,5 +1,9 @@
 # CASM-Smart-Phase
 
+## 0.1.8
+
+- Copy correct version of jar file to final image
+
 ## 0.1.7
 
 - multiple pass only filters now marked as a single PASS in merge output
